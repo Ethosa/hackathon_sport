@@ -58,14 +58,12 @@ export default {
               language: this.languages[this.selectedLanguage-1].name,
               theme: "myTheme",
               automaticLayout: true,
+              wordWrap: 'on'
             }
           )
         })
       })
     }
-  },
-  updated() {
-    this.editor && this.editor.layout()
   },
   mounted() {
     API.getTask(this.taskId).then(r => {
@@ -75,11 +73,6 @@ export default {
     API.getAllLangs().then(r => {
       this.languages = r.response
       this.updateEditor()
-    })
-    window.addEventListener('resize', _ => {
-      if (this.editor) {
-        this.editor.layout()
-      }
     })
   }
 }
