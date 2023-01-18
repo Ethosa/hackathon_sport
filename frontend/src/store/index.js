@@ -8,7 +8,8 @@ export const userStore = defineStore("userStore", {
         name: "",
         marks: [],
         group: "",
-        role: ""
+        role: "",
+        login: ""
     }),
     getters: {
         isLoggedIn: (state) => { return state.userId > 0 },

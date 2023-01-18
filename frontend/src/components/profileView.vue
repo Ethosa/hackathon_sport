@@ -3,18 +3,30 @@
     <transition name="fade" mode="out-in">
       <div
         v-if="user.isLoggedIn"
-        class="flex flex-col items-center gap-4 bg-white p-8 rounded-xl drop-shadow-lg"
+        class="flex flex-col items-center gap-4 bg-white px-8 py-4 rounded-xl font-sans drop-shadow-lg"
       >
-        <div class="flex flex-col">
-          <p class="text-2xl">{{ user.name }}</p>
+        <div class="flex flex-col items-center">
+          <p
+            class="text-2xl tracking-widest font-light self-start"
+          >
+            @{{ user.login }}
+          </p>
+          <p class="text-xl">{{ user.name }}</p>
           <div class="flex w-full gap-2 self-start items-baseline justify-between">
-            <p class="text-lg">{{ user.group }}</p>
-            <p class="text-base lowercase">{{ user.role }}</p>
+            <p class="text-lg select-none">{{ user.group }}</p>
+            <p class="text-base lowercase select-none">{{ user.role }}</p>
           </div>
         </div>
-        <div class="flex flex-col w-full divide-y-[1px] divide-fore items-start self-start">
-          <p>Решено задач: {{ user.markCount }}</p>
-          <p>Общее количество очков: {{ user.score }}</p>
+        <div class="flex flex-col w-full items-start self-start gap-2">
+          <div class="flex w-full justify-between">
+            <p>Решено задач:</p>
+            <p>{{ user.markCount }}</p>
+          </div>
+          <hr class="bg-black/[0.5]">
+          <div class="flex w-full justify-between">
+            <p>Общее количество очков:</p>
+            <p>{{ user.score }}</p>
+          </div>
         </div>
       </div>
       <div v-else class="flex flex-col gap-2 items-center bg-white p-8 rounded-xl drop-shadow-lg fade-in-animation">
@@ -57,6 +69,7 @@ export default {
         } else {
           this.user.userId = e.response.id
           this.user.token = e.response.access_token
+          this.user.login = this.$refs.login.getText()
           API.getUser(this.user.userId).then((e) => {
             this.user.name = e.response.name
             this.user.marks = e.response.marks

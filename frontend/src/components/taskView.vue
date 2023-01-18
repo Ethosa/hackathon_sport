@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="w-full h-full">
     <p class="text-2xl uppercase font-semibold tracking-widest">{{ title }}</p>
     <p class="text-left indent-8 text-xl">{{ description }}</p>
     <div class="flex w-full justify-center">
@@ -43,11 +43,10 @@ export default {
   },
   methods: {
     setLang(index) {
+      let lang = this.languages[index].name
       this.selectedLanguage = index+1
-      this.monaco.editor.setModelLanguage(this.editor.getModel(), this.languages[index].name)
-      this.editor.updateOptions({
-        language: this.languages[index].name
-      });
+      this.monaco.editor.setModelLanguage(this.editor.getModel(), lang)
+      this.editor.updateOptions({ language: lang })
     },
     updateEditor() {
       loader.init().then(monaco => {
@@ -57,12 +56,16 @@ export default {
           this.editor = monaco.editor.create(
             this.$refs.editor, {
               language: this.languages[this.selectedLanguage-1].name,
-              theme: "myTheme"
+              theme: "myTheme",
+              automaticLayout: true,
             }
           )
         })
       })
     }
+  },
+  updated() {
+    this.editor && this.editor.layout()
   },
   mounted() {
     API.getTask(this.taskId).then(r => {
@@ -72,6 +75,11 @@ export default {
     API.getAllLangs().then(r => {
       this.languages = r.response
       this.updateEditor()
+    })
+    window.addEventListener('resize', _ => {
+      if (this.editor) {
+        this.editor.layout()
+      }
     })
   }
 }
