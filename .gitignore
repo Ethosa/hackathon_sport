@@ -1,0 +1,9 @@
+.idea/
+node_modules/
+*.exe
+*.log
+*.db
+
+__pycache__/
+*.pyb
+*.pyc
