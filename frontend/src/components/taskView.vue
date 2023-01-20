@@ -1,7 +1,7 @@
 <template>
   <div class="w-full h-full">
     <p class="text-2xl uppercase font-semibold tracking-widest">{{ title }}</p>
-    <p class="text-left indent-8 text-xl">{{ description }}</p>
+    <p class="indent-8 text-xl">{{ description }}</p>
     <div class="flex w-full justify-center">
       <div v-for="(lang, index) in languages" :key="index" class="font-semibold tracking-widest">
         <div

@@ -1,31 +1,30 @@
 <template>
-  <div class="flex justify-center w-screen min-h-screen h-full bg-back text-black">
-    <div class="flex flex-col gap-4 p-8 w-4/6 extended:w-5/6 compact:w-full items-start">
-      <h1>спортпрог ⚽</h1>
-      <p class="text-xl">
-        Вашей задачей является решение всех четырех заданий.
-      </p>
-      <div class="flex flex-col items-center w-full mt-10">
+  <div class="flex flex-col w-screen min-h-screen h-full bg-gradient-to-tr from-back-left to-back-right text-white">
+    <div
+      :class="`flex gap-4 p-2 w-full h-24 items-center from-back-left to-back-right transition-all bg-gradient-to-br` + toolbarClass"
+    >
+      <h3 class="w-fit whitespace-nowrap">спортпрог ⚽</h3>
+      <div class="flex items-center justify-end w-full">
         <div class="flex">
           <Button
             text="задачи"
-            :flat="currentPage !== 'tasks'"
-            bordered
+            flat
             @click="goTo('/tasks', 'tasks')"
           >задачи</Button>
           <Button
             text="лидеры"
-            :flat="currentPage !== 'leaders'"
+            flat
             @click="goTo('/leaders', 'leaders')"
           >лидеры</Button>
           <Button
             text="профиль"
-            :flat="currentPage !== 'profile'"
+            flat
             @click="goTo('/profile', 'profile')"
           >профиль</Button>
         </div>
-        <hr>
       </div>
+    </div>
+    <div class="p-8">
       <router-view />
     </div>
   </div>
@@ -40,24 +39,31 @@ export default {
   components: {Button},
   data() {
     return {
-      currentPage: "profile",
-      user: userStore()
+      user: userStore(),
+      toolbarClass: ""
     }
   },
   methods: {
     goTo(path, page) {
       this.$router.push(this.user.isLoggedIn ? path : '/profile')
-      this.currentPage = page
     }
+  },
+  mounted() {
+    window.addEventListener('scroll', ev => {
+      if (window.scrollY > 10) {
+        this.toolbarClass = "/75"
+      } else {
+        this.toolbarClass = ""
+      }
+    })
   }
 }
 </script>
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: Nunito, Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
 }
 </style>

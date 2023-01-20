@@ -13,11 +13,13 @@ module.exports = {
             maximized: {min: '1281px'}
         },
         colors: {
-            surface: '#cffafe',
-            back: '#ecfeff',
-            fore: '#155e75',
-            accent: '#0e7490',
-            primary: '#164e63',
+            'back-left': '#130e1c',
+            'back-right': '#09151e',
+            surface: '#2d263b',
+            back: '#383048',
+            fore: '#bcabda',
+            accent: '#c5b7e8',
+            primary: '#d5c6f5',
         }
     },
   },

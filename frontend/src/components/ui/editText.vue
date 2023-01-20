@@ -14,11 +14,11 @@
       >
       <label
         :for="uniqueId"
-        class="select-none text-black/[0.5] bg-white transform transition-all absolute top-0 left-0 h-full flex items-center
+        class="select-none text-fore/[0.5] bg-back transform transition-all absolute top-0 left-0 h-full flex items-center
                  pl-2 text-sm group-focus-within:text-xs peer-valid:text-xs group-focus-within:h-1/2
                  peer-valid:h-1/2 group-focus-within:-translate-y-full peer-valid:-translate-y-full
-                 group-focus-within:px-1 peer-valid:px-1 peer-valid:-my-1 group-focus-within:-my-1
-                 group-focus-within:text-black peer-valid:text-black cursor-text"
+                 group-focus-within:px-1 peer-valid:px-1 peer-valid:-my-1 group-focus-within:-my-1 cursor-text
+                 group-focus-within-text-fore peer-valid:text-fore"
       >
         {{ Placeholder }}
       </label>
@@ -26,7 +26,7 @@
         <label
           :for="uniqueId"
           v-show="isError"
-          class="select-none text-red-500 translate-y-full px-1 bg-white -my-1 transform
+          class="select-none text-red-500 translate-y-full px-1 bg-back -my-1 transform
                  transition-all absolute top-0 left-0 h-full flex items-center text-sm"
         >
           {{ error }}

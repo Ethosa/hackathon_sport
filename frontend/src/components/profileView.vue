@@ -3,7 +3,7 @@
     <transition name="fade" mode="out-in">
       <div
         v-if="user.isLoggedIn"
-        class="flex flex-col items-center gap-4 bg-white px-8 py-4 rounded-xl font-sans drop-shadow-lg"
+        class="flex flex-col items-center gap-4 bg-back px-8 py-4 rounded-xl font-sans drop-shadow-lg"
       >
         <div class="flex flex-col items-center">
           <p
@@ -29,7 +29,7 @@
           </div>
         </div>
       </div>
-      <div v-else class="flex flex-col gap-2 items-center bg-white p-8 rounded-xl drop-shadow-lg fade-in-animation">
+      <div v-else class="flex flex-col gap-2 items-center bg-back p-8 rounded-xl drop-shadow-lg fade-in-animation">
         <p class="uppercase tracking-wide font-semibold text-lg">
           Авторизация
         </p>
