@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
+from enum import IntEnum
+
 from pydantic import BaseModel
 
 
 class Solution(BaseModel):
     code: str
     access_token: str
-    solution_id: int
+    task_id: int
     lang: int
 
 
@@ -26,3 +28,9 @@ class Mark(BaseModel):
     user_id: int
     score: int
     used_lang: str
+
+
+class Language(IntEnum):
+    Python = 1
+    CSharp = 2
+    Java = 3

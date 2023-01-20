@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
+import asyncio
 import json
 
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from re import search, findall
+from os import getcwd, path, mkdir
 from sqlite3 import connect
 
-from models import Solution, User, Task, Mark
+from uvicorn import Server, Config
+
+from cmplr import PythonCompiler, JavaCompiler, CSharpCompiler
+from models import Solution, User, Task, Mark, Language
 from utils import gen_token
 
 app = FastAPI()
@@ -246,4 +252,115 @@ async def get_mark_by_id(mark_id: int):
 
 @app.put('/solution')
 async def send_solution(solution: Solution):
-    pass
+    u = cur.execute('SELECT * FROM user WHERE access_token = ?', (solution.access_token,)).fetchone()
+    if u is None:
+        return {'error': 'User is not exists', 'code': 1}
+    filename = f'{solution.access_token}_{solution.task_id}'
+    match solution.lang:
+        case Language.Python:
+            if search(r'(import\s+(?!math)|__import__|from\s+(?!math))', solution.code):
+                return {
+                    'error': 'import is forbidden (except of math)',
+                    'available_list': [
+                        'math'
+                    ],
+                    'code': 200
+                }
+            elif search(r'open\s*\([\S\s]*\)', solution.code):
+                return {
+                    'error': 'Working with files is forbidden',
+                    'code': 401
+                }
+            with open(f'{filename}.py', 'w', encoding='utf-8') as f:
+                f.write(solution.code)
+            p = path.normpath(getcwd() + f'/{filename}.py').replace('\\', '/')
+            pycompiler = PythonCompiler(p)
+            result = await pycompiler.compile(b'asd\n10\n2')
+            print(result.stdout)
+            return {
+                'response': {
+                    'stdout': result.stdout,
+                    'stderr': result.stderr
+                }
+            }
+        case Language.CSharp:
+            if search(r'(\[[\S ()]+\])', solution.code):
+                return {
+                    'error': 'Attributes is forbidden.',
+                    'available_list': [],
+                    'code': 300
+                }
+            elif search(r'(using\s+(?!System))', solution.code):
+                return {
+                    'error': 'using is forbidden (except of System).',
+                    'available_list': [
+                        'System'
+                    ],
+                    'code': 400
+                }
+            main_class = findall(r'class\s+(\S+)\s*{', solution.code)[0]
+            if not path.exists(filename):
+                mkdir(filename)
+            with open(f'{filename}/{main_class}.cs', 'w', encoding='utf-8') as f:
+                f.write(solution.code)
+            source = path.normpath(getcwd() + f'/{filename}/{main_class}.cs').replace('\\', '/')
+            p = path.normpath(getcwd() + f'/{filename}/{main_class}').replace('\\', '/')
+            java_compiler = CSharpCompiler(p)
+            print((await java_compiler.precompile(source)).stderr.decode('cp866'))
+            result = await java_compiler.compile()
+            return {
+                'response': {
+                    'stdout': result.stdout.decode('cp866'),
+                    'stderr': result.stderr.decode('cp866')
+                }
+            }
+        case Language.Java:
+            if search(r'(import\s+(?!java\.util\.(Scanner|List|Random|LinkedList|Map|HashMap|ArrayList|Set)))', solution.code):
+                return {
+                    'error': 'import is forbidden.',
+                    'available_list': [
+                        'java.util.Scanner', 'java.util.List', 'java.util.Random',
+                        'java.util.Map', 'java.util.Set', 'java.util.ArrayList',
+                        'java.util.HashMap', 'java.util.LinkedList'
+                    ],
+                    'code': 500
+                }
+            elif search(r'\bFile\b', solution.code):
+                return {
+                    'error': 'Working with files is forbidden',
+                    'code': 401
+                }
+            main_class = findall(r'class\s+(\S+)\s*{', solution.code)[0]
+            if not path.exists(filename):
+                mkdir(filename)
+            with open(f'{filename}/{main_class}.java', 'w', encoding='utf-8') as f:
+                f.write(solution.code)
+            source = path.normpath(getcwd() + f'/{filename}/{main_class}.java').replace('\\', '/')
+            p = path.normpath(getcwd() + f'/{filename}/{main_class}').replace('\\', '/')
+            java_compiler = JavaCompiler(p)
+            await java_compiler.precompile(source)
+            result = await java_compiler.compile()
+            return {
+                'response': {
+                    'stdout': result.stdout,
+                    'stderr': result.stderr
+                }
+            }
+        case _:
+            return {
+                'error': 'Unknown language',
+                'code': 1000
+            }
+
+
+class ProactorServer(Server):
+    def run(self, sockets=None):
+        loop = asyncio.ProactorEventLoop()
+        asyncio.set_event_loop(loop)
+        asyncio.run(self.serve(sockets=sockets))
+
+
+if __name__ == '__main__':
+    config = Config(app="main:app", host="localhost", port=8000, reload=True)
+    server = ProactorServer(config=config)
+    server.run()
