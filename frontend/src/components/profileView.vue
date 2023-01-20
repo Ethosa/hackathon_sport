@@ -1,18 +1,18 @@
 <template>
-  <div class="flex w-full h-full justify-center items-center">
+  <div class="flex-auto flex w-full h-full justify-center items-center">
     <transition name="fade" mode="out-in">
       <div
         v-if="user.isLoggedIn"
         class="flex flex-col items-center gap-4 bg-back px-8 py-4 rounded-xl font-sans drop-shadow-lg"
       >
         <div class="flex flex-col items-center">
-          <p
-            class="text-2xl tracking-widest font-light self-start"
-          >
+          <p class="text-2xl tracking-widest font-light self-start">
             @{{ user.login }}
           </p>
           <p class="text-xl">{{ user.name }}</p>
-          <div class="flex w-full gap-2 self-start items-baseline justify-between">
+          <div
+            class="flex w-full gap-2 self-start items-baseline justify-between"
+          >
             <p class="text-lg select-none">{{ user.group }}</p>
             <p class="text-base lowercase select-none">{{ user.role }}</p>
           </div>
@@ -22,17 +22,18 @@
             <p>Решено задач:</p>
             <p>{{ user.markCount }}</p>
           </div>
-          <hr class="bg-black/[0.5]">
+          <hr class="bg-black/[0.5]" />
           <div class="flex w-full justify-between">
             <p>Общее количество очков:</p>
             <p>{{ user.score }}</p>
           </div>
         </div>
       </div>
-      <div v-else class="flex flex-col gap-2 items-center bg-back p-8 rounded-xl drop-shadow-lg fade-in-animation">
-        <p class="uppercase tracking-wide font-semibold text-lg">
-          Авторизация
-        </p>
+      <div
+        v-else
+        class="flex flex-col gap-4 items-center bg-back p-8 rounded-xl drop-shadow-lg fade-in-animation"
+      >
+        <p class="uppercase tracking-wide font-semibold text-lg">Авторизация</p>
         <div class="flex flex-col gap-4 w-full items-center">
           <EditText ref="login" placeholder="Логин" />
           <EditText ref="pass" placeholder="Пароль" input-type="password" />
@@ -48,48 +49,51 @@
 </template>
 
 <script>
-import { userStore } from '@/store'
-import EditText from "@/components/ui/editText"
-import Button from "@/components/ui/button"
-import API from "@/mixins/api"
+import { userStore } from "@/store";
+import EditText from "@/components/ui/editText";
+import Button from "@/components/ui/button";
+import API from "@/mixins/api";
 
 export default {
   name: "profileView",
-  components: {Button, EditText},
+  components: { Button, EditText },
   data() {
     return {
       user: userStore(),
-    }
+    };
   },
   methods: {
     auth() {
-      API.auth(this.$refs.login.getText(), this.$refs.pass.getText()).then((e) => {
-        if ('error' in e) {
-          this.$refs.pass.setError(e.error)
-        } else {
-          this.user.userId = e.response.id
-          this.user.token = e.response.access_token
-          this.user.login = this.$refs.login.getText()
-          API.getUser(this.user.userId).then((e) => {
-            this.user.name = e.response.name
-            this.user.marks = e.response.marks
-            this.user.group = e.response.group
-            let role = e.response.role
-            API.getRole(role).then((res) => {
-              this.user.role = res.response.title
-            })
-          })
-          console.log(e)
+      API.auth(this.$refs.login.getText(), this.$refs.pass.getText()).then(
+        (e) => {
+          if ("error" in e) {
+            this.$refs.pass.setError(e.error);
+          } else {
+            this.user.userId = e.response.id;
+            this.user.token = e.response.access_token;
+            this.user.login = this.$refs.login.getText();
+            API.getUser(this.user.userId).then((e) => {
+              this.user.name = e.response.name;
+              this.user.marks = e.response.marks;
+              this.user.group = e.response.group;
+              let role = e.response.role;
+              API.getRole(role).then((res) => {
+                this.user.role = res.response.title;
+              });
+            });
+            console.log(e);
+          }
         }
-      })
+      );
     },
-  }
-}
+  },
+};
 </script>
 
 <style scoped>
-.fade-leave-active, .fade-enter-active {
-  transition: all .3s ease-in-out;
+.fade-leave-active,
+.fade-enter-active {
+  transition: all 0.3s ease-in-out;
 }
 .fade-enter-from {
   opacity: 0;
@@ -112,6 +116,6 @@ export default {
 }
 
 .fade-in-animation {
-  animation: fadeOnShow .3s ease-in-out;
+  animation: fadeOnShow 0.3s ease-in-out;
 }
 </style>

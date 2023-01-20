@@ -8,7 +8,7 @@
     </div>
     <div
       v-else
-      class="px-4 py-1 bg-fore text-back cursor-pointer select-none transition-all duration-300 hover:bg-accent active:bg-primary"
+      class="px-4 py-1 bg-fore text-back cursor-pointer rounded-md select-none transition-all duration-300 hover:bg-accent active:bg-primary"
     >
       <slot></slot>
     </div>
@@ -20,7 +20,6 @@ export default {
   name: "Button",
   props: {
     flat: Boolean,
-    text: String
-  }
-}
+  },
+};
 </script>
