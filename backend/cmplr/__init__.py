@@ -71,7 +71,7 @@ class PythonCompiler(ABCCompiler):
 class JavaCompiler(ABCCompiler):
     async def precompile(self):
         proc = await self.generate_proc(
-            f'javac {self.filepath.rsplit(".", 1)[0]} --release 8'
+            f'javac {self.filepath} --release 8'
         )
         return OutputData(*(await proc.communicate()))
 
@@ -80,7 +80,7 @@ class JavaCompiler(ABCCompiler):
             input_data: bytes = None
     ) -> OutputData:
         proc = await self.generate_proc(
-            f'cd {self.filepath.rsplit("/", 1)[0]} && java {self.filepath.rsplit("/", 1)[1]}'
+            f'cd {self.filepath.rsplit("/", 1)[0]} && java {self.filepath.rsplit("/", 1)[1].rsplit(".", 1)[0]}'
         )
         if input_data:
             res = await proc.communicate(input_data)
@@ -102,9 +102,9 @@ class JavaCompiler(ABCCompiler):
                 ],
                 'code': 500
             }
-        elif search(r'\bFile\b', code):
+        elif searched := search(r'(File|FileOutputStream|FileInputStream|InputStream|OutputStream)', code):
             return {
-                'error': 'Working with files is forbidden',
+                'error': f'{searched.group(1)} class is forbidden',
                 'code': 401
             }
 
