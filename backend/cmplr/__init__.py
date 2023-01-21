@@ -132,9 +132,19 @@ class CSharpCompiler(ABCCompiler):
 
     @staticmethod
     def forbidden(code: str) -> dict[str, any] | None:
-        if search(r'(\[[\S ()]+\])', code):
+        if search(r'(\[[\S ()]+])', code):
             return {
                 'error': 'Attributes is forbidden.',
+                'available_list': [],
+                'code': 300
+            }
+        elif searched := search(
+                r'\b(FileInfo|File|Directory|DirectoryInfo|DriveInfo|FileStream|StreamReader|StreamWriter'
+                r'|BinaryReader|BinaryWriter|ZipFile|DeflateStream|GZipStream)\b',
+                code
+        ):
+            return {
+                'error': f'{searched.group(1)} class is forbidden',
                 'available_list': [],
                 'code': 300
             }

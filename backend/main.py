@@ -261,7 +261,8 @@ async def send_solution(solution: Solution):
             p = path.normpath(getcwd() + f'/{filename}.py').replace('\\', '/')
             pycompiler = PythonCompiler(p)
             # check for forbidden things
-            if forbidden := pycompiler.forbidden(solution.code) is not None:
+            forbidden = pycompiler.forbidden(solution.code)
+            if forbidden is not None:
                 return forbidden
             # save code in file
             with open(f'{filename}.py', 'w', encoding='utf-8') as f:
@@ -279,7 +280,8 @@ async def send_solution(solution: Solution):
             p = path.normpath(getcwd() + f'/{filename}/{main_class}.cs').replace('\\', '/')
             csharp_compiler = CSharpCompiler(p)
             # check for forbidden things
-            if forbidden := csharp_compiler.forbidden(solution.code) is not None:
+            forbidden = csharp_compiler.forbidden(solution.code)
+            if forbidden is not None:
                 return forbidden
             # save code in file
             if not path.exists(filename):
@@ -304,7 +306,8 @@ async def send_solution(solution: Solution):
             p = path.normpath(getcwd() + f'/{filename}/{main_class}.java').replace('\\', '/')
             java_compiler = JavaCompiler(p)
             # check for forbidden things
-            if forbidden := java_compiler.forbidden(solution.code) is not None:
+            forbidden = java_compiler.forbidden(solution.code)
+            if forbidden is not None:
                 return forbidden
             # save code in file
             if not path.exists(filename):
