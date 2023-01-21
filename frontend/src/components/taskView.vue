@@ -166,7 +166,7 @@ export default {
         this.selectedLanguage
       );
 
-      this.compiled.stdout !== ""
+      this.compiled.stdout === ""
         ? (this.apiStatus = false)
         : (this.apiStatus = true);
     },
