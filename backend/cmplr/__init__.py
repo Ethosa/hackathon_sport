@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import asyncio
+from asyncio.subprocess import Process
+from re import search
 
 
 class OutputData:
@@ -24,31 +26,52 @@ class ABCCompiler:
     ) -> OutputData:
         raise NotImplementedError('You can not call compile method')
 
+    @staticmethod
+    def forbidden(code: str) -> dict[str, any] | None:
+        return None
+
+    @staticmethod
+    async def generate_proc(command: str) -> Process:
+        return await asyncio.create_subprocess_shell(
+            command,
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+
 
 class PythonCompiler(ABCCompiler):
     async def compile(
             self,
             input_data: bytes = None
     ) -> OutputData:
-        proc = await asyncio.create_subprocess_shell(
-            f'python {self.filepath}',
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
+        proc = await self.generate_proc(f'python {self.filepath}')
         if input_data:
             res = await proc.communicate(input_data)
             return OutputData(*res)
         return OutputData(*(await proc.communicate()))
+
+    @staticmethod
+    def forbidden(code: str) -> dict[str, any] | None:
+        if search(r'(import\s+(?!math)|__import__|from\s+(?!math))', code):
+            return {
+                'error': 'import is forbidden (except of math)',
+                'available_list': [
+                    'math'
+                ],
+                'code': 200
+            }
+        elif search(r'open\s*\([\S\s]*\)', code):
+            return {
+                'error': 'Working with files is forbidden',
+                'code': 401
+            }
 
 
 class JavaCompiler(ABCCompiler):
-    async def precompile(self, filepath):
-        proc = await asyncio.create_subprocess_shell(
-            f'javac {filepath} --release 8',
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+    async def precompile(self):
+        proc = await self.generate_proc(
+            f'javac {self.filepath.rsplit(".", 1)[0]} --release 8'
         )
         return OutputData(*(await proc.communicate()))
 
@@ -56,26 +79,42 @@ class JavaCompiler(ABCCompiler):
             self,
             input_data: bytes = None
     ) -> OutputData:
-        proc = await asyncio.create_subprocess_shell(
-            f'cd {self.filepath.rsplit("/", 1)[0]} && java {self.filepath.rsplit("/", 1)[1]}',
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+        proc = await self.generate_proc(
+            f'cd {self.filepath.rsplit("/", 1)[0]} && java {self.filepath.rsplit("/", 1)[1]}'
         )
         if input_data:
             res = await proc.communicate(input_data)
             return OutputData(*res)
         return OutputData(*(await proc.communicate()))
+
+    @staticmethod
+    def forbidden(code: str) -> dict[str, any] | None:
+        if search(
+                r'(import\s+(?!java\.util\.(Scanner|List|Random|LinkedList|Map|HashMap|ArrayList|Set)))',
+                code
+        ):
+            return {
+                'error': 'import is forbidden.',
+                'available_list': [
+                    'java.util.Scanner', 'java.util.List', 'java.util.Random',
+                    'java.util.Map', 'java.util.Set', 'java.util.ArrayList',
+                    'java.util.HashMap', 'java.util.LinkedList'
+                ],
+                'code': 500
+            }
+        elif search(r'\bFile\b', code):
+            return {
+                'error': 'Working with files is forbidden',
+                'code': 401
+            }
 
 
 class CSharpCompiler(ABCCompiler):
-    async def precompile(self, filepath):
-        proc = await asyncio.create_subprocess_shell(
+    async def precompile(self):
+        proc = await self.generate_proc(
             f'cd {self.filepath.rsplit("/", 1)[0]} && '
-            f'csc /t:exe /out:{filepath.rsplit("/", 1)[1].rsplit(".", 1)[0]}.exe {filepath.rsplit("/", 1)[1]}',
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+            f'csc /t:exe /out:{self.filepath.rsplit("/", 1)[1].rsplit(".", 1)[0]}.exe '
+            f'{self.filepath.rsplit("/", 1)[1]}'
         )
         return OutputData(*(await proc.communicate()))
 
@@ -83,13 +122,27 @@ class CSharpCompiler(ABCCompiler):
             self,
             input_data: bytes = None
     ) -> OutputData:
-        proc = await asyncio.create_subprocess_shell(
-            f'cd {self.filepath.rsplit("/", 1)[0]} && {self.filepath.rsplit("/", 1)[1]}.exe',
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+        proc = await self.generate_proc(
+            f'cd {self.filepath.rsplit("/", 1)[0]} && {self.filepath.rsplit("/", 1)[1].rsplit(".", 1)[0]}.exe'
         )
         if input_data:
             res = await proc.communicate(input_data)
             return OutputData(*res)
         return OutputData(*(await proc.communicate()))
+
+    @staticmethod
+    def forbidden(code: str) -> dict[str, any] | None:
+        if search(r'(\[[\S ()]+\])', code):
+            return {
+                'error': 'Attributes is forbidden.',
+                'available_list': [],
+                'code': 300
+            }
+        elif search(r'(using\s+(?!System))', code):
+            return {
+                'error': 'using is forbidden (except of System).',
+                'available_list': [
+                    'System'
+                ],
+                'code': 400
+            }

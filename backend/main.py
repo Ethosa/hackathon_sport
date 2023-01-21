@@ -258,25 +258,16 @@ async def send_solution(solution: Solution):
     filename = f'{solution.access_token}_{solution.task_id}'
     match solution.lang:
         case Language.Python:
-            if search(r'(import\s+(?!math)|__import__|from\s+(?!math))', solution.code):
-                return {
-                    'error': 'import is forbidden (except of math)',
-                    'available_list': [
-                        'math'
-                    ],
-                    'code': 200
-                }
-            elif search(r'open\s*\([\S\s]*\)', solution.code):
-                return {
-                    'error': 'Working with files is forbidden',
-                    'code': 401
-                }
-            with open(f'{filename}.py', 'w', encoding='utf-8') as f:
-                f.write(solution.code)
             p = path.normpath(getcwd() + f'/{filename}.py').replace('\\', '/')
             pycompiler = PythonCompiler(p)
+            # check for forbidden things
+            if forbidden := pycompiler.forbidden(solution.code) is not None:
+                return forbidden
+            # save code in file
+            with open(f'{filename}.py', 'w', encoding='utf-8') as f:
+                f.write(solution.code)
+            # compile result
             result = await pycompiler.compile(b'asd\n10\n2')
-            print(result.stdout)
             return {
                 'response': {
                     'stdout': result.stdout,
@@ -284,66 +275,53 @@ async def send_solution(solution: Solution):
                 }
             }
         case Language.CSharp:
-            if search(r'(\[[\S ()]+\])', solution.code):
-                return {
-                    'error': 'Attributes is forbidden.',
-                    'available_list': [],
-                    'code': 300
-                }
-            elif search(r'(using\s+(?!System))', solution.code):
-                return {
-                    'error': 'using is forbidden (except of System).',
-                    'available_list': [
-                        'System'
-                    ],
-                    'code': 400
-                }
             main_class = findall(r'class\s+(\S+)\s*{', solution.code)[0]
+            p = path.normpath(getcwd() + f'/{filename}/{main_class}.cs').replace('\\', '/')
+            csharp_compiler = CSharpCompiler(p)
+            # check for forbidden things
+            if forbidden := csharp_compiler.forbidden(solution.code) is not None:
+                return forbidden
+            # save code in file
             if not path.exists(filename):
                 mkdir(filename)
             with open(f'{filename}/{main_class}.cs', 'w', encoding='utf-8') as f:
                 f.write(solution.code)
-            source = path.normpath(getcwd() + f'/{filename}/{main_class}.cs').replace('\\', '/')
-            p = path.normpath(getcwd() + f'/{filename}/{main_class}').replace('\\', '/')
-            java_compiler = CSharpCompiler(p)
-            print((await java_compiler.precompile(source)).stderr.decode('cp866'))
-            result = await java_compiler.compile()
+            # compile result
+            precompile_result = await csharp_compiler.precompile()
+            result = await csharp_compiler.compile()
             return {
                 'response': {
                     'stdout': result.stdout.decode('cp866'),
-                    'stderr': result.stderr.decode('cp866')
+                    'stderr': result.stderr.decode('cp866'),
+                    'precompile': {
+                        'stdout': precompile_result.stdout.decode('cp866'),
+                        'stderr': precompile_result.stderr.decode('cp866'),
+                    }
                 }
             }
         case Language.Java:
-            if search(r'(import\s+(?!java\.util\.(Scanner|List|Random|LinkedList|Map|HashMap|ArrayList|Set)))', solution.code):
-                return {
-                    'error': 'import is forbidden.',
-                    'available_list': [
-                        'java.util.Scanner', 'java.util.List', 'java.util.Random',
-                        'java.util.Map', 'java.util.Set', 'java.util.ArrayList',
-                        'java.util.HashMap', 'java.util.LinkedList'
-                    ],
-                    'code': 500
-                }
-            elif search(r'\bFile\b', solution.code):
-                return {
-                    'error': 'Working with files is forbidden',
-                    'code': 401
-                }
             main_class = findall(r'class\s+(\S+)\s*{', solution.code)[0]
+            p = path.normpath(getcwd() + f'/{filename}/{main_class}.java').replace('\\', '/')
+            java_compiler = JavaCompiler(p)
+            # check for forbidden things
+            if forbidden := java_compiler.forbidden(solution.code) is not None:
+                return forbidden
+            # save code in file
             if not path.exists(filename):
                 mkdir(filename)
             with open(f'{filename}/{main_class}.java', 'w', encoding='utf-8') as f:
                 f.write(solution.code)
-            source = path.normpath(getcwd() + f'/{filename}/{main_class}.java').replace('\\', '/')
-            p = path.normpath(getcwd() + f'/{filename}/{main_class}').replace('\\', '/')
-            java_compiler = JavaCompiler(p)
-            await java_compiler.precompile(source)
+            # compile result
+            precompile_result = await java_compiler.precompile()
             result = await java_compiler.compile()
             return {
                 'response': {
                     'stdout': result.stdout,
-                    'stderr': result.stderr
+                    'stderr': result.stderr,
+                    'precompile': {
+                        'stdout': precompile_result.stdout,
+                        'stderr': precompile_result.stderr,
+                    }
                 }
             }
         case _:
