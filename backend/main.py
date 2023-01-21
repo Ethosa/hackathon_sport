@@ -255,7 +255,7 @@ async def send_solution(solution: Solution):
     u = cur.execute('SELECT * FROM user WHERE access_token = ?', (solution.access_token,)).fetchone()
     if u is None:
         return {'error': 'User is not exists', 'code': 1}
-    filename = f'{solution.access_token}_{solution.task_id}'
+    filename = f'solutions/{solution.access_token}_{solution.task_id}'
     match solution.lang:
         case Language.Python:
             p = path.normpath(getcwd() + f'/{filename}.py').replace('\\', '/')

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import asyncio
+from platform import system
 from asyncio.subprocess import Process
 from re import search
-
 
 class OutputData:
     def __init__(self, stdout: str, stderr: str):
@@ -45,7 +45,14 @@ class PythonCompiler(ABCCompiler):
             self,
             input_data: bytes = None
     ) -> OutputData:
-        proc = await self.generate_proc(f'python {self.filepath}')
+        command = ""
+        
+        if (system == "Linux" or "Darwin"):
+            command = "python3"
+        else:
+            command = "python"
+        
+        proc = await self.generate_proc(f'{command} {self.filepath}')
         if input_data:
             res = await proc.communicate(input_data)
             return OutputData(*res)

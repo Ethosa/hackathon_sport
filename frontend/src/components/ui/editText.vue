@@ -41,11 +41,11 @@ export default {
     placeholder: String,
     inputType: String,
     errorText: String,
+    leadingIcon: String,
+    trailingIcon: String,
     important: Boolean,
     minLength: Number,
     maxLength: Number,
-    leadingIcon: String,
-    trailingIcon: String,
   },
   computed: {
     InputType() {

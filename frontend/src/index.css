@@ -1,78 +1,89 @@
-@import url(
-'https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;500;600&family=Oswald:wght@200;300;400;500;600&display=swap'
-);
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;500;600&family=Oswald:wght@200;300;400;500;600&display=swap");
 
 @tailwind base;
 @tailwind utilities;
 @tailwind components;
 
 @keyframes headerDown {
-    0% {
-        transform: translateY(-40px);
-    }
-    100% {
-        transform: translateY(0px);
-    }
+  0% {
+    transform: translateY(-40px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }
 
-@keyframes headerUp {
-    0% {
-        transform: translateY(0px);
-    }
-    100% {
-        transform: translateY(-40px);
-    }
+@keyframes opacityShow {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
 }
 
 *::-webkit-scrollbar {
-    width: 0px;
+  width: 0px;
 }
 
 *::-webkit-scrollbar-thumb {
-    width: 0px;
+  width: 0px;
 }
 
 h1 {
-    font-family: Oswald;
-    @apply tracking-wider font-semibold text-5xl;
+  font-family: Oswald;
+  @apply tracking-wider font-semibold text-5xl;
 }
 
 h2 {
-    font-family: Oswald;
-    @apply tracking-wider font-semibold text-4xl;
+  font-family: Oswald;
+  @apply tracking-wider font-semibold text-4xl;
 }
 
 h3 {
-    font-family: Oswald;
-    @apply tracking-wider font-semibold text-3xl;
+  font-family: Oswald;
+  @apply tracking-wider font-semibold text-3xl;
 }
 
 hr {
-    @apply bg-fore h-px w-full border-none;
+  @apply bg-fore h-px w-full border-none;
 }
 
+#app {
+  font-family: Nunito, Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.tasksAnim-enter-active,
+.tasksAnim-leave-active {
+  transition: all 0.3s ease-in;
+}
+
+.tasksAnim-leave-to,
+.tasksAnim-enter-from {
+  opacity: 0;
+}
+
+/* monaco rounded corners */
+
 .overflow-guard {
-    border-radius: 10px;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  border: 1px solid white;
 }
 
 .monaco-editor {
-    border-radius: 10px;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
 }
 
-.ok-enter-active,
-.ok-leave-active {
-    transition: all 0.3s ease-in;
-}
-
-.ok-leave-to,
-.ok-enter-from {
-    opacity: 0;
+.showTask {
+  animation: opacityShow 400ms ease-out;
 }
 
 .showHeader {
-    animation: headerUp .5s ease-in-out;
-}
-
-.hideHeader {
-    animation: headerDown .5s ease-in-out;
+  animation: headerDown 200ms ease-out;
 }
