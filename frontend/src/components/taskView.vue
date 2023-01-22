@@ -34,18 +34,31 @@
         />
 
         <div class="flex-auto overflow-x-scroll">
-          <div v-if="compiled.stdout !== ''" class="showTask">
+          <div v-if="compiled.compile.stdout !== ''" class="showTask">
             <p
-              v-for="str in compiled.stdout.split('\n')"
+              v-for="str in compiled.compile.stdout.split('\n')"
               :key="
-                compiled.stdout.split('\n').findIndex((el) => el === str) + 1
+                compiled.compile.stdout.split('\n').findIndex((el) => el === str) + 1
               "
             >
               {{ str }}
             </p>
           </div>
-          <p v-if="compiled.stderr !== ''">
-            {{ compiled.stderr.split('",')[1] }}
+          <p v-if="compiled.compile.stderr !== ''">
+            {{ compiled.compile.stderr.split('",')[1] }}
+          </p>
+          <div v-if="compiled.run.stdout !== ''" class="showTask">
+            <p
+              v-for="str in compiled.run.stdout.split('\n')"
+              :key="
+                compiled.run.stdout.split('\n').findIndex((el) => el === str) + 1
+              "
+            >
+              {{ str }}
+            </p>
+          </div>
+          <p v-if="compiled.run.stderr !== ''">
+            {{ compiled.run.stderr.split('",')[1] }}
           </p>
         </div>
       </div>
@@ -99,14 +112,20 @@ export default {
       taskId: this.$route.params.id,
       title: "",
       description: "",
-      selectedLanguage: 1,
+      selectedLanguage: 3,
       languages: [],
       editor: undefined,
       monaco: undefined,
-      code: undefined,
+      code: "",
       compiled: {
-        stdout: "",
-        stderr: "",
+        compile: {
+          stdout: "",
+          stderr: ""
+        },
+        run: {
+          stdout: "",
+          stderr: ""
+        },
       },
       apiStatus: undefined,
     };
@@ -159,8 +178,14 @@ export default {
     async run(code) {
       this.apiStatus = "sending";
       this.compiled = {
-        stdout: "",
-        stderr: "",
+        compile: {
+          stdout: "",
+          stderr: ""
+        },
+        run: {
+          stdout: "",
+          stderr: ""
+        },
       };
 
       this.compiled = await API.sendSolution(
@@ -168,8 +193,9 @@ export default {
         parseInt(this.taskId),
         this.selectedLanguage
       );
+      console.log(this.compiled)
 
-      this.compiled.stdout === ""
+      this.compiled.run.stdout === ""
         ? (this.apiStatus = false)
         : (this.apiStatus = true);
     },
