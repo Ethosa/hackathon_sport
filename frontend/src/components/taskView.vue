@@ -116,6 +116,9 @@ export default {
   },
   methods: {
     setLang(index) {
+      /*
+        TODO: Сделай это рабочим пожалуйста
+       */
       let lang = this.languages[index].name;
       this.selectedLanguage = index + 1;
       this.monaco.editor.setModelLanguage(this.editor.getModel(), lang);
