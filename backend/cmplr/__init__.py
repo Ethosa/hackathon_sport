@@ -49,7 +49,7 @@ class ABCCompiler:
 
 class PythonCompiler(ABCCompiler):
     async def compile(self) -> OutputData:
-        pass
+        return OutputData(b'', b'')
 
     async def run(
             self,
@@ -82,6 +82,8 @@ class PythonCompiler(ABCCompiler):
 
 class JavaCompiler(ABCCompiler):
     async def compile(self) -> OutputData:
+        print(
+            f'javac {self.filepath} --release 8')
         proc = await self.generate_proc(
             f'javac {self.filepath} --release 8'
         )
@@ -91,6 +93,8 @@ class JavaCompiler(ABCCompiler):
             self,
             input_data: bytes = None
     ) -> OutputData:
+        print(
+            f'cd {self.filepath.rsplit("/", 1)[0]} && java {self.filepath.rsplit("/", 1)[1].rsplit(".", 1)[0]}')
         proc = await self.generate_proc(
             f'cd {self.filepath.rsplit("/", 1)[0]} && java {self.filepath.rsplit("/", 1)[1].rsplit(".", 1)[0]}'
         )

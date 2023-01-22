@@ -12,9 +12,11 @@ from database import db, cur
 from uvicorn import Server, Config
 
 from cmplr import PythonCompiler, JavaCompiler, CSharpCompiler
+from cmplr.solution_wizard import SolutionWizard
 from models import Solution, User, Task, Mark, Language
 from utils import gen_token
 from config import ADMIN_TOKEN
+
 
 app = FastAPI()
 app.add_middleware(
@@ -204,77 +206,14 @@ async def send_solution(solution: Solution):
     if u is None:
         return {'error': 'User is not exists', 'code': 1}
     filename = f'solutions/{solution.access_token}_{solution.task_id}'
+    sw = SolutionWizard(filename, solution)
     match solution.lang:
         case Language.Python:
-            p = path.normpath(getcwd() + f'/{filename}.py').replace('\\', '/')
-            pycompiler = PythonCompiler(p)
-            # check for forbidden things
-            forbidden = pycompiler.forbidden(solution.code)
-            if forbidden is not None:
-                return forbidden
-            # save code in file
-            with open(f'{filename}.py', 'w', encoding='utf-8') as f:
-                f.write(solution.code)
-            # compile result
-            result = await pycompiler.run(b'asd\n10\n2')
-            return {
-                'response': {
-                    'stdout': result.stdout,
-                    'stderr': result.stderr
-                }
-            }
+            return await sw.check_solution(PythonCompiler)
         case Language.CSharp:
-            main_class = findall(r'class\s+(\S+)\s*{', solution.code)[0]
-            p = path.normpath(getcwd() + f'/{filename}/{main_class}.cs').replace('\\', '/')
-            csharp_compiler = CSharpCompiler(p)
-            # check for forbidden things
-            forbidden = csharp_compiler.forbidden(solution.code)
-            if forbidden is not None:
-                return forbidden
-            # save code in file
-            if not path.exists(filename):
-                mkdir(filename)
-            with open(f'{filename}/{main_class}.cs', 'w', encoding='utf-8') as f:
-                f.write(solution.code)
-            # compile result
-            precompile_result = await csharp_compiler.compile()
-            result = await csharp_compiler.run()
-            return {
-                'response': {
-                    'stdout': result.stdout,
-                    'stderr': result.stderr,
-                    'compile': {
-                        'stdout': precompile_result.stdout,
-                        'stderr': precompile_result.stderr,
-                    }
-                }
-            }
+            return await sw.check_solution(CSharpCompiler, file_ext='cs', need_class_name=True)
         case Language.Java:
-            main_class = findall(r'class\s+(\S+)\s*{', solution.code)[0]
-            p = path.normpath(getcwd() + f'/{filename}/{main_class}.java').replace('\\', '/')
-            java_compiler = JavaCompiler(p)
-            # check for forbidden things
-            forbidden = java_compiler.forbidden(solution.code)
-            if forbidden is not None:
-                return forbidden
-            # save code in file
-            if not path.exists(filename):
-                mkdir(filename)
-            with open(f'{filename}/{main_class}.java', 'w', encoding='utf-8') as f:
-                f.write(solution.code)
-            # compile result
-            precompile_result = await java_compiler.compile()
-            result = await java_compiler.run()
-            return {
-                'response': {
-                    'stdout': result.stdout,
-                    'stderr': result.stderr,
-                    'compile': {
-                        'stdout': precompile_result.stdout,
-                        'stderr': precompile_result.stderr,
-                    }
-                }
-            }
+            return await sw.check_solution(JavaCompiler, file_ext='java', need_class_name=True)
         case _:
             return {
                 'error': 'Unknown language',
