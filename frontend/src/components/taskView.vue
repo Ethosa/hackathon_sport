@@ -14,7 +14,7 @@
           Ошибка компилятора ❌
         </p>
         <p v-else-if="apiStatus === true" class="text-center">
-          Скомпилированно ✅
+          Скомпилировано ✅
         </p>
         <p v-else-if="apiStatus === 'sending'" class="text-center">
           Компилирование...
@@ -38,7 +38,9 @@
             <p
               v-for="str in compiled.compile.stdout.split('\n')"
               :key="
-                compiled.compile.stdout.split('\n').findIndex((el) => el === str) + 1
+                compiled.compile.stdout
+                  .split('\n')
+                  .findIndex((el) => el === str) + 1
               "
             >
               {{ str }}
@@ -51,15 +53,21 @@
             <p
               v-for="str in compiled.run.stdout.split('\n')"
               :key="
-                compiled.run.stdout.split('\n').findIndex((el) => el === str) + 1
+                compiled.run.stdout.split('\n').findIndex((el) => el === str) +
+                1
               "
             >
               {{ str }}
             </p>
           </div>
-          <p v-if="compiled.run.stderr !== ''">
-            {{ compiled.run.stderr.split('",')[1] }}
-          </p>
+          <div v-if="compiled.run.stderr !== ''" class="flex flex-col gap-6">
+            <p>
+              {{ compiled.compile.stderr }}
+            </p>
+            <p>
+              {{ compiled.run.stderr }}
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -112,7 +120,7 @@ export default {
       taskId: this.$route.params.id,
       title: "",
       description: "",
-      selectedLanguage: 3,
+      selectedLanguage: 1,
       languages: [],
       editor: undefined,
       monaco: undefined,
@@ -120,11 +128,11 @@ export default {
       compiled: {
         compile: {
           stdout: "",
-          stderr: ""
+          stderr: "",
         },
         run: {
           stdout: "",
-          stderr: ""
+          stderr: "",
         },
       },
       apiStatus: undefined,
@@ -135,9 +143,6 @@ export default {
   },
   methods: {
     setLang(index) {
-      /*
-        TODO: Сделай это рабочим пожалуйста
-       */
       let lang = this.languages[index].name;
       this.selectedLanguage = index + 1;
       this.monaco.editor.setModelLanguage(this.editor.getModel(), lang);
@@ -145,6 +150,7 @@ export default {
     },
     updateEditor() {
       let values = this;
+
       loader
         .init()
         .then((monaco) => {
@@ -163,6 +169,8 @@ export default {
                 tabCompletion: true,
               });
 
+              values.editor = code;
+
               code.onKeyUp(() => {
                 values.code = code.getValue();
               });
@@ -180,11 +188,11 @@ export default {
       this.compiled = {
         compile: {
           stdout: "",
-          stderr: ""
+          stderr: "",
         },
         run: {
           stdout: "",
-          stderr: ""
+          stderr: "",
         },
       };
 
@@ -193,7 +201,7 @@ export default {
         parseInt(this.taskId),
         this.selectedLanguage
       );
-      console.log(this.compiled)
+      console.log(this.compiled);
 
       this.compiled.run.stdout === ""
         ? (this.apiStatus = false)
