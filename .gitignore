@@ -26,3 +26,7 @@ pnpm-lock.yaml
 __pycache__/
 *.pyb
 *.pyc
+
+
+*.exe
+*.db
