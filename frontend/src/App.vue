@@ -12,7 +12,6 @@
         @click="$router.push(user.isLoggedIn ? '/tasks' : '/profile')"
       >
         Winter IT Hack: спортпрог ⚽
-        <!-- что здесь написать то? @ethosa-->
       </h3>
       <div class="flex">
         <Button
