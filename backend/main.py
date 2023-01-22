@@ -5,15 +5,16 @@ import json
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from re import search, findall
+from re import findall
 from os import getcwd, path, mkdir
-from sqlite3 import connect
+from database import db, cur
 
 from uvicorn import Server, Config
 
 from cmplr import PythonCompiler, JavaCompiler, CSharpCompiler
 from models import Solution, User, Task, Mark, Language
 from utils import gen_token
+from config import ADMIN_TOKEN
 
 app = FastAPI()
 app.add_middleware(
@@ -22,59 +23,6 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*']
 )
-
-db = connect('hackathon_solutions.db')
-cur = db.cursor()
-
-cur.execute('''CREATE TABLE IF NOT EXISTS user (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    group_name TEXT NOT NULL,
-    login TEXT NOT NULL,
-    password TEXT NOT NULL,
-    access_token TEXT NOT NULL,
-    role INTEGER NOT NULL
-);''')
-cur.execute('''CREATE TABLE IF NOT EXISTS task (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT NOT NULL
-);''')
-cur.execute('''CREATE TABLE IF NOT EXISTS mark (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    task_id INTEGER NOT NULL,
-    user_id INTEGER NOT NULL,
-    score INTEGER NOT NULL,
-    used_language INTEGER NOT NULL
-);''')
-cur.execute('''CREATE TABLE IF NOT EXISTS lang (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    name TEXT NOT NULL
-);''')
-cur.execute('''CREATE TABLE IF NOT EXISTS role (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL
-);''')
-db.commit()
-
-
-def default(table: str, min_size: int, values: dict[str, object]):
-    roles = cur.execute(f'SELECT * FROM {table}').fetchall()
-    if len(roles) < min_size:
-        cur.execute(
-            f'INSERT INTO {table} ({",".join(values.keys())}) VALUES ({",".join(["?" for i in values.keys()])})',
-            tuple(values.values())
-        )
-        db.commit()
-
-
-default('role', 2, {'title': 'Пользователь'})  # id = 1
-default('role', 2, {'title': 'Администратор'})  # id = 2
-
-default('lang', 3, {'title': 'Python', 'name': 'python'})  # id = 1
-default('lang', 3, {'title': 'C#', 'name': 'csharp'})  # id = 2
-default('lang', 3, {'title': 'Java', 'name': 'java'})  # id =3
 
 
 async def set_body(request: Request, body: bytes):
@@ -97,7 +45,7 @@ async def check_token(request: Request, call_next):
                     "error": "Method not allowed",
                     "code": 100
                 }, status_code=status.HTTP_401_UNAUTHORIZED)
-        elif 'admin' not in secret and secret['admin'] != 'qwerty_secret':
+        elif 'admin' not in secret and secret['admin'] != ADMIN_TOKEN:
             return JSONResponse({
                 "error": "Method not allowed",
                 "code": 100
@@ -268,7 +216,7 @@ async def send_solution(solution: Solution):
             with open(f'{filename}.py', 'w', encoding='utf-8') as f:
                 f.write(solution.code)
             # compile result
-            result = await pycompiler.compile(b'asd\n10\n2')
+            result = await pycompiler.run(b'asd\n10\n2')
             return {
                 'response': {
                     'stdout': result.stdout,
@@ -289,15 +237,15 @@ async def send_solution(solution: Solution):
             with open(f'{filename}/{main_class}.cs', 'w', encoding='utf-8') as f:
                 f.write(solution.code)
             # compile result
-            precompile_result = await csharp_compiler.precompile()
-            result = await csharp_compiler.compile()
+            precompile_result = await csharp_compiler.compile()
+            result = await csharp_compiler.run()
             return {
                 'response': {
-                    'stdout': result.stdout.decode('cp866'),
-                    'stderr': result.stderr.decode('cp866'),
-                    'precompile': {
-                        'stdout': precompile_result.stdout.decode('cp866'),
-                        'stderr': precompile_result.stderr.decode('cp866'),
+                    'stdout': result.stdout,
+                    'stderr': result.stderr,
+                    'compile': {
+                        'stdout': precompile_result.stdout,
+                        'stderr': precompile_result.stderr,
                     }
                 }
             }
@@ -315,13 +263,13 @@ async def send_solution(solution: Solution):
             with open(f'{filename}/{main_class}.java', 'w', encoding='utf-8') as f:
                 f.write(solution.code)
             # compile result
-            precompile_result = await java_compiler.precompile()
-            result = await java_compiler.compile()
+            precompile_result = await java_compiler.compile()
+            result = await java_compiler.run()
             return {
                 'response': {
                     'stdout': result.stdout,
                     'stderr': result.stderr,
-                    'precompile': {
+                    'compile': {
                         'stdout': precompile_result.stdout,
                         'stderr': precompile_result.stderr,
                     }

@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 import asyncio
-from platform import system
+import os
+
 from asyncio.subprocess import Process
 from re import search
 
+
 class OutputData:
-    def __init__(self, stdout: str, stderr: str):
-        self.stdout = stdout
-        self.stderr = stderr
+    def __init__(self, stdout: bytes, stderr: bytes, encoding: str = 'utf-8'):
+        self.stdout: str = stdout.decode(encoding)
+        self.stderr: str = stderr.decode(encoding)
 
     def __str__(self) -> str:
         return f'OutputData({self.stdout}, {self.stderr})'
@@ -21,10 +23,15 @@ class ABCCompiler:
         self.filepath = filepath
 
     async def compile(
+            self
+    ) -> OutputData:
+        raise NotImplementedError('You can not call compile method')
+
+    async def run(
             self,
             input_data: bytes = None
     ) -> OutputData:
-        raise NotImplementedError('You can not call compile method')
+        raise NotImplementedError('You can not call run method')
 
     @staticmethod
     def forbidden(code: str) -> dict[str, any] | None:
@@ -41,17 +48,15 @@ class ABCCompiler:
 
 
 class PythonCompiler(ABCCompiler):
-    async def compile(
+    async def compile(self) -> OutputData:
+        pass
+
+    async def run(
             self,
             input_data: bytes = None
     ) -> OutputData:
-        command = ""
-        
-        if (system == "Linux" or "Darwin"):
-            command = "python3"
-        else:
-            command = "python"
-        
+        command = 'python' if os.name in ['win32', 'nt'] else 'python3'
+
         proc = await self.generate_proc(f'{command} {self.filepath}')
         if input_data:
             res = await proc.communicate(input_data)
@@ -76,13 +81,13 @@ class PythonCompiler(ABCCompiler):
 
 
 class JavaCompiler(ABCCompiler):
-    async def precompile(self):
+    async def compile(self) -> OutputData:
         proc = await self.generate_proc(
             f'javac {self.filepath} --release 8'
         )
         return OutputData(*(await proc.communicate()))
 
-    async def compile(
+    async def run(
             self,
             input_data: bytes = None
     ) -> OutputData:
@@ -117,15 +122,15 @@ class JavaCompiler(ABCCompiler):
 
 
 class CSharpCompiler(ABCCompiler):
-    async def precompile(self):
+    async def compile(self) -> OutputData:
         proc = await self.generate_proc(
             f'cd {self.filepath.rsplit("/", 1)[0]} && '
             f'csc /t:exe /out:{self.filepath.rsplit("/", 1)[1].rsplit(".", 1)[0]}.exe '
             f'{self.filepath.rsplit("/", 1)[1]}'
         )
-        return OutputData(*(await proc.communicate()))
+        return OutputData(*(await proc.communicate()), 'cp866')
 
-    async def compile(
+    async def run(
             self,
             input_data: bytes = None
     ) -> OutputData:
@@ -135,7 +140,7 @@ class CSharpCompiler(ABCCompiler):
         if input_data:
             res = await proc.communicate(input_data)
             return OutputData(*res)
-        return OutputData(*(await proc.communicate()))
+        return OutputData(*(await proc.communicate()), 'cp866')
 
     @staticmethod
     def forbidden(code: str) -> dict[str, any] | None:
