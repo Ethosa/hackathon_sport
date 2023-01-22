@@ -16,18 +16,16 @@
       </h3>
       <div class="flex">
         <Button
-          text="задачи"
           flat
           @click="$router.push(user.isLoggedIn ? '/tasks' : '/profile')"
           >задачи</Button
         >
         <Button
-          text="лидеры"
           flat
           @click="$router.push(user.isLoggedIn ? '/leaders' : '/profile')"
           >лидеры</Button
         >
-        <Button text="профиль" flat @click="$router.push('/profile')"
+        <Button flat @click="$router.push('/profile')"
           >профиль</Button
         >
       </div>
