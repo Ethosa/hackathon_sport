@@ -53,5 +53,5 @@ class Maat:
             'success': success,
             'errors': errors,
             'max_success': max_success,
-            'compile_result': [res]
+            'compile_result': res
         }}
