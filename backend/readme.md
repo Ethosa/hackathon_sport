@@ -8,12 +8,7 @@
 4. Install python requirements (FastAPI, uvicorn)
 
 ### Linux
-1. Install `chicken-bin` package from apt
-2. Install `openjdk-8-jdk` and `openjdk-8-jre` packages
-
-Example:
 ```bash
 sudo apt update
-sudo apt install chicken-bin -y
-sudo apt install openjdk-8-jdk openjdk-8-jre -y
+sudo apt install mono-complete openjdk-8-jre openjdk-8-jdk -y
 ```

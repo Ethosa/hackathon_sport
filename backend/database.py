@@ -249,7 +249,7 @@ defaults(
         'hidden': False
     }, {
         'task_id': 4,
-        'input': '3\n1\n2\n3\n4\n6\n7\n8\n9',
+        'input': '3\n1\n2\n3\n4\n5\n6\n7\n8\n9',
         'output': '1 4 7\n2 5 8\n3 6 9',
         'hidden': True
     }, {

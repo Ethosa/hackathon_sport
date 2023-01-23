@@ -187,6 +187,12 @@ async def create_mark(mark: Mark):
     }}
 
 
+@app.get('/input{task_id}')
+async def get_all_inputs(task_id: int):
+    inputs = cur.execute('SELECT * FROM default_input WHERE task_id = ?', (task_id,)).fetchall()
+    return {'response': [{'input': i[2], 'output': i[3]} for i in inputs if i[4]]}
+
+
 @app.get('/mark{mark_id}')
 async def get_mark_by_id(mark_id: int):
     mark = cur.execute('SELECT * FROM mark WHERE id = ?', (mark_id,)).fetchone()
@@ -217,6 +223,7 @@ async def send_solution(solution: Solution):
                 sw, PythonCompiler,
                 [i[2] for i in default_input],
                 [i[3] for i in default_input],
+                [i[4] for i in default_input],
             )
             return result
         case Language.CSharp:
