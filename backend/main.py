@@ -13,6 +13,7 @@ from uvicorn import Server, Config
 
 from cmplr import PythonCompiler, JavaCompiler, CSharpCompiler
 from cmplr.solution_wizard import SolutionWizard
+from cmplr.maat import Maat
 from models import Solution, User, Task, Mark, Language
 from utils import gen_token
 from config import ADMIN_TOKEN
@@ -203,17 +204,25 @@ async def get_mark_by_id(mark_id: int):
 @app.put('/solution')
 async def send_solution(solution: Solution):
     u = cur.execute('SELECT * FROM user WHERE access_token = ?', (solution.access_token,)).fetchone()
+    task = cur.execute('SELECT * FROM task WHERE id = ?', (solution.task_id,)).fetchone()
+    default_input = cur.execute('SELECT * FROM default_input WHERE task_id = ?', (solution.task_id,)).fetchall()
     if u is None:
         return {'error': 'User is not exists', 'code': 1}
     filename = f'solutions/{solution.access_token}_{solution.task_id}'
     sw = SolutionWizard(filename, solution)
+    maat = Maat()
     match solution.lang:
         case Language.Python:
-            return await sw.check_solution(PythonCompiler)
+            result = await maat.watch(
+                sw, PythonCompiler,
+                [i[2] for i in default_input],
+                [i[3] for i in default_input],
+            )
+            return result
         case Language.CSharp:
-            return await sw.check_solution(CSharpCompiler, file_ext='cs', need_class_name=True)
+            result = await sw.check_solution(CSharpCompiler, file_ext='cs', need_class_name=True)
         case Language.Java:
-            return await sw.check_solution(JavaCompiler, file_ext='java', need_class_name=True)
+            result = await sw.check_solution(JavaCompiler, file_ext='java', need_class_name=True)
         case _:
             return {
                 'error': 'Unknown language',

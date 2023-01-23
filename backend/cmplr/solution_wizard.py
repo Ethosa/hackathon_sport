@@ -4,7 +4,7 @@ from os import path, getcwd, mkdir
 from typing import Type
 
 from models import Solution
-from . import ABCCompiler, PythonCompiler, JavaCompiler, CSharpCompiler
+from . import ABCCompiler
 
 
 class SolutionWizard:

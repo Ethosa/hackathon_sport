@@ -34,11 +34,11 @@
         />
 
         <div class="flex-auto overflow-x-scroll">
-          <div v-if="compiled.compile.stdout !== ''" class="showTask">
+          <div v-if="compiled.compile_result.compile.stdout !== ''" class="showTask">
             <p
-              v-for="str in compiled.compile.stdout.split('\n')"
+              v-for="str in compiled.compile_result.compile.stdout.split('\n')"
               :key="
-                compiled.compile.stdout
+                compiled.compile_result.compile.stdout
                   .split('\n')
                   .findIndex((el) => el === str) + 1
               "
@@ -46,26 +46,26 @@
               {{ str }}
             </p>
           </div>
-          <p v-if="compiled.compile.stderr !== ''">
-            {{ compiled.compile.stderr.split('",')[1] }}
+          <p v-if="compiled.compile_result.compile.stderr !== ''">
+            {{ compiled.compile_result.compile.stderr.split('",')[1] }}
           </p>
-          <div v-if="compiled.run.stdout !== ''" class="showTask">
+          <div v-if="compiled.compile_result.run.stdout !== ''" class="showTask">
             <p
-              v-for="str in compiled.run.stdout.split('\n')"
+              v-for="str in compiled.compile_result.run.stdout.split('\n')"
               :key="
-                compiled.run.stdout.split('\n').findIndex((el) => el === str) +
+                compiled.compile_result.run.stdout.split('\n').findIndex((el) => el === str) +
                 1
               "
             >
               {{ str }}
             </p>
           </div>
-          <div v-if="compiled.run.stderr !== ''" class="flex flex-col gap-6">
+          <div v-if="compiled.compile_result.run.stderr !== ''" class="flex flex-col gap-6">
             <p>
-              {{ compiled.compile.stderr }}
+              {{ compiled.compile_result.compile.stderr }}
             </p>
             <p>
-              {{ compiled.run.stderr }}
+              {{ compiled.compile_result.run.stderr }}
             </p>
           </div>
         </div>
@@ -126,14 +126,19 @@ export default {
       monaco: undefined,
       code: "",
       compiled: {
-        compile: {
-          stdout: "",
-          stderr: "",
-        },
-        run: {
-          stdout: "",
-          stderr: "",
-        },
+        success: 0,
+        errors: 0,
+        max_success: 0,
+        compile_result: {
+          compile: {
+            stdout: "",
+            stderr: "",
+          },
+          run: {
+            stdout: "",
+            stderr: "",
+          },
+        }
       },
       apiStatus: undefined,
     };
@@ -186,14 +191,19 @@ export default {
     async run(code) {
       this.apiStatus = "sending";
       this.compiled = {
-        compile: {
-          stdout: "",
-          stderr: "",
-        },
-        run: {
-          stdout: "",
-          stderr: "",
-        },
+        success: 0,
+        errors: 0,
+        max_success: 0,
+        compile_result: {
+          compile: {
+            stdout: "",
+            stderr: "",
+          },
+          run: {
+            stdout: "",
+            stderr: "",
+          },
+        }
       };
 
       this.compiled = await API.sendSolution(
@@ -203,7 +213,7 @@ export default {
       );
       console.log(this.compiled);
 
-      this.compiled.run.stdout === ""
+      this.compiled.compile_result.run.stdout === ""
         ? (this.apiStatus = false)
         : (this.apiStatus = true);
     },
