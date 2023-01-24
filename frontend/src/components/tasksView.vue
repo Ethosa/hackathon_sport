@@ -37,6 +37,7 @@
         </Button>
       </div>
     </transition-group>
+    <div v-if="tasks.length === 0">please wait</div>
   </div>
 </template>
 
