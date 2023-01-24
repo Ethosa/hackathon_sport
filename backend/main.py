@@ -260,7 +260,7 @@ async def send_solution(solution: Solution):
     if u is None:
         return {'response': {'error': 'User is not exists', 'code': 1}}
     mark = cur.execute(
-        'SELECT * FROM task WHERE task_id = ? and user_id = ?',
+        'SELECT * FROM mark WHERE task_id = ? and user_id = ?',
         (solution.task_id, u[0])
     ).fetchone()
     if mark is not None:

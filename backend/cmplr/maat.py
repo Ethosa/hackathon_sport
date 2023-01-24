@@ -49,6 +49,10 @@ class Maat:
                 )
                 print(result)
                 result = result['response']
+                weight = result['weight']
+                del result['weight']
+                time = min(time, result['time'])
+                del result['time']
                 if 'error' in result:
                     return result
                 if result['run']['stderr'] or result['compile']['stderr']:
@@ -57,10 +61,6 @@ class Maat:
                         result['input'] = inp
                         result['output'] = out
                         res.append(result)
-                        weight = result['weight']
-                        del result['weight']
-                        time = min(time, result['time'])
-                        del result['time']
                 elif result['run']['stdout'] or result['compile']['stdout'] and out:
                     if result['run']['stdout'].replace('\r', '') in [out, out + '\n']:
                         success += 1
@@ -70,10 +70,6 @@ class Maat:
                         result['input'] = inp
                         result['output'] = out
                         res.append(result)
-                        weight = result['weight']
-                        del result['weight']
-                        time = min(time, result['time'])
-                        del result['time']
 
         return {'response': {
             'success': success,
