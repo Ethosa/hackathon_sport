@@ -152,10 +152,11 @@ class CSharpCompiler(ABCCompiler):
             if os.name in ['nt', 'win32'] else
             f'mcs -out:{self.filepath.rsplit("/", 1)[1].rsplit(".", 1)[0]}.exe {self.filepath.rsplit("/", 1)[1]}'
         )
+        print(f'cd {self.filepath.rsplit("/", 1)[0]} && {cmd}')
         proc = await self.generate_proc(
             f'cd {self.filepath.rsplit("/", 1)[0]} && {cmd}'
         )
-        return OutputData(*(await proc.communicate()), 'cp866')
+        return OutputData(*(await proc.communicate()), encoding='cp866')
 
     async def run(
             self,
@@ -166,13 +167,14 @@ class CSharpCompiler(ABCCompiler):
             if os.name in ['nt', 'win32'] else
             f'mono {self.filepath.rsplit("/", 1)[1].rsplit(".", 1)[0]}.exe'
         )
+        print(f'cd {self.filepath.rsplit("/", 1)[0]} && {cmd}')
         proc = await self.generate_proc(
             f'cd {self.filepath.rsplit("/", 1)[0]} && {cmd}'
         )
         if input_data:
             res = await proc.communicate(input_data)
-            return OutputData(*res)
-        return OutputData(*(await proc.communicate()), 'cp866')
+            return OutputData(*res, encoding='cp866')
+        return OutputData(*(await proc.communicate()), encoding='cp866')
 
     @staticmethod
     def forbidden(code: str) -> dict[str, any] | None:

@@ -258,7 +258,13 @@ async def send_solution(solution: Solution):
     task = cur.execute('SELECT * FROM task WHERE id = ?', (solution.task_id,)).fetchone()
     default_input = cur.execute('SELECT * FROM default_input WHERE task_id = ?', (solution.task_id,)).fetchall()
     if u is None:
-        return {'error': 'User is not exists', 'code': 1}
+        return {'response': {'error': 'User is not exists', 'code': 1}}
+    mark = cur.execute(
+        'SELECT * FROM task WHERE task_id = ? and user_id = ?',
+        (solution.task_id, u[0])
+    ).fetchone()
+    if mark is not None:
+        return {'response': {'error': 'Mark is exists', 'code': 100}}
     filename = f'solutions/{solution.access_token}_{solution.task_id}'
     sw = SolutionWizard(filename, solution)
 
