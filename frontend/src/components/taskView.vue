@@ -139,8 +139,8 @@
             <p>Список разрешённых библиотек:</p>
             <ul>
               <li
-                v-for="lib in compiled.available_list"
-                :key="compiled.available_list.findIndex((el) => lib === el)"
+                v-for="(lib, index) in compiled.available_list"
+                :key="index"
               >
                 {{ lib }}
               </li>

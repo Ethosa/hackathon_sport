@@ -92,6 +92,7 @@ export default {
           }
         }
       );
+      console.log(this.user)
     },
   },
 };

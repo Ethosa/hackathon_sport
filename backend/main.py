@@ -75,9 +75,7 @@ async def send_solution(user_id: int):
             'task_id': [{
                 'id': solution[0],
                 'title': solution[1]
-            } for solution in
-                cur.execute('SELECT * FROM task WHERE id = ?', (mark[1],)).fetchall()
-            ],
+            } for solution in cur.execute('SELECT * FROM task WHERE id = ?', (mark[1],)).fetchall()],
             'user_id': mark[2],
             'score': mark[3]
         } for mark in user_marks]
