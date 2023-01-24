@@ -72,7 +72,7 @@ async def send_solution(user_id: int):
         'role': user[6],
         'marks': [{
             'id': mark[0],
-            'task_id': [{
+            'task': [{
                 'id': solution[0],
                 'title': solution[1]
             } for solution in cur.execute('SELECT * FROM task WHERE id = ?', (mark[1],)).fetchall()],
