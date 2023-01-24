@@ -76,10 +76,7 @@
                 apiStatus === true
               "
               :class="`flex justify-between items-center my-2 border-[1px] border-white p-2 border-opacity-40 rounded-md cursor-default ${
-                result.run.stdout.substring(0, result.run.stdout.length - 1) ===
-                result.output
-                  ? 'text-green-500'
-                  : 'text-red-500'
+                result.run.stdout === result.output ? 'text-green-500' : 'text-red-500'
               } hover:border-opacity-90 transition-all`"
             >
               <div>Ввод: {{ result.input }}</div>
@@ -256,6 +253,8 @@ export default {
         parseInt(this.taskId),
         this.selectedLanguage
       );
+
+      console.log(this.compiled)
 
       this.compiled.compile_result.forEach((el) => {
         el.run.stderr !== "" || el.compile.stderr !== ""
