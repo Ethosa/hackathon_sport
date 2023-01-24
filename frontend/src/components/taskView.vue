@@ -5,7 +5,7 @@
     </p>
     <p class="indent-8 text-xl">{{ description }}</p>
 
-    <div class="flex-auto flex">
+    <div class="flex-auto flex max-h-[700px]">
       <div ref="editor" class="w-3/4" />
       <div
         class="font-mono flex flex-col gap-2 w-1/4 border-b-[1px] border-t-[1px] border-r-[1px] rounded-r-[10px] p-3"
@@ -21,7 +21,7 @@
               : apiStatus === "sending"
               ? "Компилирование 🛠"
               : apiStatus === null
-              ? "Вывода нет ❌"
+              ? "Вывод отстутствует ❌"
               : "Ожидание запуска..."
           }}
         </div>
@@ -43,89 +43,114 @@
         />
 
         <div
-          class="flex-auto overflow-x-scroll text-sm"
-          v-if="compiled.compile_result.length > 0"
+          class="flex-auto overflow-scroll text-sm"
+          v-if="compiled.compile_result"
         >
-          <div
-            v-if="
-              compiled.compile_result[0].run.stderr !== '' ||
-              compiled.compile_result[0].compile.stderr !== ''
-            "
-          >
-            <div class="flex flex-col gap-6">
-              <p>
-                {{ compiled.compile_result[0].compile.stderr }}
-              </p>
-              <p>
-                {{ compiled.compile_result[0].run.stderr.split('",')[1] }}
-              </p>
-            </div>
-          </div>
-          <div v-else>
+          <div v-if="compiled.compile_result.length > 0">
             <div
-              v-for="(result, index) in compiled.compile_result"
-              :key="index"
+              v-if="
+                compiled.compile_result[0].run.stderr !== '' ||
+                compiled.compile_result[0].compile.stderr !== ''
+              "
             >
-              <div v-if="result.compile.stdout !== ''" class="showTask">
-                <p
-                  v-for="str in result.compile.stdout.split('\n')"
-                  :key="
-                    result.compile.stdout
-                      .split('\n')
-                      .findIndex((el) => el === str) + 1
-                  "
-                >
-                  {{ str }}
+              <div class="flex flex-col gap-6">
+                <p>
+                  {{ compiled.compile_result[0].compile.stderr }}
+                </p>
+                <p>
+                  {{ compiled.compile_result[0].run.stderr.split('",')[1] }}
                 </p>
               </div>
-
+            </div>
+            <div v-else>
               <div
-                v-if="
-                  result.run.stderr === '' &&
-                  result.compile.stderr === '' &&
-                  apiStatus === true
-                "
-                :class="`flex justify-between items-center my-2 border-[1px] border-white p-2 border-opacity-40 rounded-md cursor-default ${
-                  result.run.stdout === result.output
-                    ? 'text-green-500'
-                    : 'text-red-500'
-                } hover:border-opacity-90 transition-all duration-200`"
+                v-for="(result, index) in compiled.compile_result"
+                :key="index"
               >
-                <div>Ввод: {{ result.input }}</div>
-                <div class="flex flex-col">
-                  <p>Результат: {{ result.run.stdout }}</p>
-                  <p>Нужно: {{ result.output }}</p>
+                <div v-if="result.compile.stdout !== ''" class="showTask">
+                  <p
+                    v-for="str in result.compile.stdout.split('\n')"
+                    :key="
+                      result.compile.stdout
+                        .split('\n')
+                        .findIndex((el) => el === str) + 1
+                    "
+                  >
+                    {{ str }}
+                  </p>
+                </div>
+
+                <div
+                  v-if="
+                    result.run.stderr === '' &&
+                    result.compile.stderr === '' &&
+                    apiStatus === true
+                  "
+                  :class="`flex gap-3 justify-between items-center my-2 border-[1px] border-white p-2 border-opacity-40 rounded-md cursor-default ${
+                    result.run.stdout === result.output
+                      ? 'text-green-500'
+                      : 'text-red-500'
+                  } hover:border-opacity-90 transition-all duration-200`"
+                >
+                  <div>Ввод: {{ result.input }}</div>
+                  <div class="flex flex-col">
+                    <p>Результат: {{ result.run.stdout }}</p>
+                    <p>Нужно: {{ result.output }}</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div v-if="compiled.max_success !== 0 && apiStatus === true">
+            <div v-if="compiled.max_success !== 0 && apiStatus === true">
+              <div
+                v-for="index in compiled.max_success -
+                compiled.compile_result.length"
+                :key="index"
+                class="w-full opacity-60 text-center cursor-default"
+              >
+                Скрытый тест
+              </div>
+            </div>
+
             <div
-              v-for="index in compiled.max_success -
-              compiled.compile_result.length"
-              :key="index"
-              class="w-full opacity-60 text-center cursor-default"
+              :class="`w-full border-b-[1px] border-white my-2 transition-all duration-300`"
+              v-if="apiStatus === true"
+            />
+
+            <div
+              class="flex flex-col gap-1 items-center justify-center cursor-default"
+              v-if="apiStatus === true"
             >
-              Скрытый тест
+              <p>
+                Пройдено тестов: {{ this.compiled.success }}/{{
+                  this.compiled.max_success
+                }}
+              </p>
+              <p>Время прохождения: {{ compiled.time }} мс</p>
+              <p>Размер файла: {{ compiled.weight }} байтов</p>
             </div>
           </div>
-
+        </div>
+        <div v-else>
           <div
-            :class="`w-full border-b-[1px] border-white my-2 transition-all duration-300`"
-            v-if="apiStatus === true"
-          />
-
-          <div
-            class="flex flex-col gap-1 items-center justify-center cursor-default"
-            v-if="apiStatus === true"
+            v-if="compiled.error === 'import is forbidden'"
+            class="text-sm flex flex-col gap-3 cursor-default"
           >
-            <p>
-              Пройдено тестов: {{ this.compiled.success }}/{{
-                this.compiled.max_success
-              }}
-            </p>
-            <p>Время прохождения: {{ compiled.time }} мс</p>
-            <p>Размер файла: {{ compiled.weight }} байтов</p>
+            <p>Импортирование библиотек вне требований запрещено.</p>
+            <p>Список разрешённых библиотек:</p>
+            <ul>
+              <li
+                v-for="lib in compiled.available_list"
+                :key="compiled.available_list.findIndex((el) => lib === el)"
+              >
+                {{ lib }}
+              </li>
+            </ul>
+          </div>
+          <div
+            v-else-if="compiled.error === 'Mark is exists'"
+            class="text-sm flex flex-col gap-3 cursor-default"
+          >
+            <p>Работа уже была засчитана, переделать её невозможно)</p>
           </div>
         </div>
       </div>
@@ -269,14 +294,18 @@ export default {
         this.selectedLanguage
       );
 
-      this.compiled.compile_result.forEach((el) => {
-        el.run.stderr !== "" || el.compile.stderr !== ""
-          ? (this.apiStatus = false)
-          : (this.apiStatus = true);
-      });
+      if (this.compiled.compile_result) {
+        this.compiled.compile_result.forEach((el) => {
+          el.run.stderr !== "" || el.compile.stderr !== ""
+            ? (this.apiStatus = false)
+            : (this.apiStatus = true);
+        });
 
-      if (this.compiled.compile_result.length === 0) {
-        this.apiStatus = null;
+        if (this.compiled.compile_result.length === 0) {
+          this.apiStatus = null;
+        }
+      } else {
+        this.apiStatus = false;
       }
     },
   },

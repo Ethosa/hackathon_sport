@@ -55,7 +55,7 @@ async function sendSolution(code, task_id, lang, token = userStore().token) {
       lang: lang,
     })
     .then((res) => {
-      return res.data.response;
+      return res.data.response ? res.data.response : res.data;
     })
     .catch((err) => {
       return err;

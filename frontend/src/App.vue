@@ -4,7 +4,7 @@
   >
     <div
       :class="`${
-        fixedHeader ? 'showHeader fixed w-full bg-black bg-opacity-90' : ''
+        fixedHeader ? 'showHeader fixed z-50 w-full bg-black bg-opacity-90' : ''
       } flex gap-4 h-20 px-40 justify-between items-center transition-all select-none`"
     >
       <h3
