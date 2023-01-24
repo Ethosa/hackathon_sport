@@ -226,18 +226,17 @@ async def send_solution(solution: Solution):
 
     match solution.lang:
         case Language.Python:
-            result = await maat.watch(
+            return await maat.watch(
                 sw, PythonCompiler, input_data, output, hidden
             )
-            return result
         case Language.CSharp:
-            result = await maat.watch(
+            return await maat.watch(
                 sw, CSharpCompiler, input_data, output, hidden,
                 file_ext='cs',
                 class_name=True
             )
         case Language.Java:
-            result = await maat.watch(
+            return await maat.watch(
                 sw, JavaCompiler, input_data, output, hidden,
                 file_ext='java',
                 class_name=True
