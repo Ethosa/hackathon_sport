@@ -49,12 +49,12 @@ class Maat:
                 )
                 print(result)
                 result = result['response']
+                if 'error' in result:
+                    return result
                 weight = result['weight']
                 del result['weight']
                 time = min(time, result['time'])
                 del result['time']
-                if 'error' in result:
-                    return result
                 if result['run']['stderr'] or result['compile']['stderr']:
                     errors += 1
                     if not is_hidden:
