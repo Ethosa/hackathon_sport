@@ -18,6 +18,7 @@ export const router = createRouter({
     },
     {
       path: "/leaders",
+      component: LeadersView,
     },
     // нам похуииии)))))
     {

@@ -39,10 +39,16 @@
           <EditText ref="login" placeholder="Логин" />
           <EditText ref="pass" placeholder="Пароль" input-type="password" />
         </div>
-        <div class="flex justify-center w-full">
+        <div class="flex flex-col gap-2 justify-center items-center w-full">
           <Button type="submit" class="py-0 px-2 text-base -mr-1">
             Войти
           </Button>
+          <p class="text-sm text-center">
+            <strong>Внимание:</strong> у вас будет активна только одна сессия.
+            <br />
+            При перезагрузке страница, она истекает <br />
+            и необходимо будет войти в аккаунт заново.
+          </p>
         </div>
       </form>
     </transition>

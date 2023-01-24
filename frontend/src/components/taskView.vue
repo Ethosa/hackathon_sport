@@ -76,8 +76,10 @@
                 apiStatus === true
               "
               :class="`flex justify-between items-center my-2 border-[1px] border-white p-2 border-opacity-40 rounded-md cursor-default ${
-                result.run.stdout === result.output ? 'text-green-500' : 'text-red-500'
-              } hover:border-opacity-90 transition-all`"
+                result.run.stdout === result.output
+                  ? 'text-green-500'
+                  : 'text-red-500'
+              } hover:border-opacity-90 transition-all duration-200`"
             >
               <div>Ввод: {{ result.input }}</div>
               <div class="flex flex-col">
@@ -104,12 +106,16 @@
           />
 
           <div
-            class="flex justify-center gap-3 cursor-default"
+            class="flex flex-col gap-1 items-center justify-center cursor-default"
             v-if="apiStatus === true"
           >
-            Пройдено тестов: {{ this.compiled.success }}/{{
-              this.compiled.max_success
-            }}
+            <p>
+              Пройдено тестов: {{ this.compiled.success }}/{{
+                this.compiled.max_success
+              }}
+            </p>
+            <p>Время прохождения: {{ compiled.time }} мс</p>
+            <p>Размер файла: {{ compiled.weight }} байтов</p>
           </div>
         </div>
       </div>
@@ -247,14 +253,11 @@ export default {
       this.apiStatus = "sending";
 
       this.compiled = this.reset();
-
       this.compiled = await API.sendSolution(
         code,
         parseInt(this.taskId),
         this.selectedLanguage
       );
-
-      console.log(this.compiled)
 
       this.compiled.compile_result.forEach((el) => {
         el.run.stderr !== "" || el.compile.stderr !== ""
