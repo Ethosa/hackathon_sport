@@ -207,6 +207,20 @@ async def get_mark_by_id(mark_id: int):
     }}
 
 
+
+@app.get('/available{lang_id}')
+async def get_available(lang_id: int):
+    match lang_id:
+        case Language.Python:
+            return {'response': PythonCompiler.available}
+        case Language.Java:
+            return {'response': JavaCompiler.available}
+        case Language.CSharp:
+            return {'response': CSharpCompiler.available}
+        case _:
+            return {'error': 'Language is not exists', 'code': 50}
+
+
 @app.put('/solution')
 async def send_solution(solution: Solution):
     u = cur.execute('SELECT * FROM user WHERE access_token = ?', (solution.access_token,)).fetchone()
@@ -216,7 +230,6 @@ async def send_solution(solution: Solution):
         return {'error': 'User is not exists', 'code': 1}
     filename = f'solutions/{solution.access_token}_{solution.task_id}'
     sw = SolutionWizard(filename, solution)
-    maat = Maat()
 
     input_data, output, hidden = (
                 [i[2] for i in default_input],
@@ -226,17 +239,17 @@ async def send_solution(solution: Solution):
 
     match solution.lang:
         case Language.Python:
-            return await maat.watch(
+            return await Maat.watch(
                 sw, PythonCompiler, input_data, output, hidden
             )
         case Language.CSharp:
-            return await maat.watch(
+            return await Maat.watch(
                 sw, CSharpCompiler, input_data, output, hidden,
                 file_ext='cs',
                 class_name=True
             )
         case Language.Java:
-            return await maat.watch(
+            return await Maat.watch(
                 sw, JavaCompiler, input_data, output, hidden,
                 file_ext='java',
                 class_name=True

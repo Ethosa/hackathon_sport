@@ -16,6 +16,8 @@ class OutputData:
 
 
 class ABCCompiler:
+    available = []
+
     def __init__(
             self,
             filepath: str = ''
@@ -48,6 +50,10 @@ class ABCCompiler:
 
 
 class PythonCompiler(ABCCompiler):
+    available = [
+        'math', 'random'
+    ]
+
     async def compile(self) -> OutputData:
         return OutputData(b'', b'')
 
@@ -68,19 +74,13 @@ class PythonCompiler(ABCCompiler):
         if search(r'(\nimport\s+(?!(math|random))|__import__)', code):
             return {'response': {
                 'error': 'import is forbidden',
-                'available_list': [
-                    'math',
-                    'random'
-                ],
+                'available_list': PythonCompiler.available,
                 'code': 200
             }}
         elif search(r'from\s+(?!(math|random)\s+import)', code):
             return {'response': {
                 'error': 'import is forbidden',
-                'available_list': [
-                    'math',
-                    'random'
-                ],
+                'available_list': PythonCompiler.available,
                 'code': 200
             }}
         elif search(r'open\s*\([\S\s]*\)', code):
@@ -91,6 +91,12 @@ class PythonCompiler(ABCCompiler):
 
 
 class JavaCompiler(ABCCompiler):
+    available = [
+        'java.util.Scanner', 'java.util.List', 'java.util.Random',
+        'java.util.Map', 'java.util.Set', 'java.util.ArrayList',
+        'java.util.HashMap', 'java.util.LinkedList'
+    ]
+
     async def compile(self) -> OutputData:
         flags = '--release 8' if os.name in ['nt', 'win32'] else ''
         proc = await self.generate_proc(
@@ -120,11 +126,7 @@ class JavaCompiler(ABCCompiler):
         ):
             return {'response': {
                 'error': 'import is forbidden.',
-                'available_list': [
-                    'java.util.Scanner', 'java.util.List', 'java.util.Random',
-                    'java.util.Map', 'java.util.Set', 'java.util.ArrayList',
-                    'java.util.HashMap', 'java.util.LinkedList'
-                ],
+                'available_list': JavaCompiler.available,
                 'code': 500
             }}
         elif searched := search(r'(File|FileOutputStream|FileInputStream|InputStream|OutputStream)', code):
@@ -135,6 +137,10 @@ class JavaCompiler(ABCCompiler):
 
 
 class CSharpCompiler(ABCCompiler):
+    available = [
+        'System'
+    ]
+
     async def compile(self) -> OutputData:
         cmd = (
             f'csc /t:exe /out:{self.filepath.rsplit("/", 1)[1].rsplit(".", 1)[0]}.exe {self.filepath.rsplit("/", 1)[1]}'
@@ -184,8 +190,6 @@ class CSharpCompiler(ABCCompiler):
         elif search(r'(using\s+(?!System))', code):
             return {'response': {
                 'error': 'using is forbidden (except of System).',
-                'available_list': [
-                    'System'
-                ],
+                'available_list': CSharpCompiler.available,
                 'code': 400
             }}
