@@ -29,9 +29,10 @@
           </div>
         </div>
       </div>
-      <div
+      <form
         v-else
         class="flex flex-col gap-4 items-center bg-back p-8 rounded-xl drop-shadow-lg fade-in-animation"
+        @submit.prevent="auth()"
       >
         <p class="uppercase tracking-wide font-semibold text-lg">Авторизация</p>
         <div class="flex flex-col gap-4 w-full items-center">
@@ -39,11 +40,11 @@
           <EditText ref="pass" placeholder="Пароль" input-type="password" />
         </div>
         <div class="flex justify-center w-full">
-          <Button class="py-0 px-2 text-base -mr-1" @click="auth()">
+          <Button type="submit" class="py-0 px-2 text-base -mr-1">
             Войти
           </Button>
         </div>
-      </div>
+      </form>
     </transition>
   </div>
 </template>
