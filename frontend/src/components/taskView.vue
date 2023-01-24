@@ -20,6 +20,8 @@
               ? "Тесты не пройдены ❌"
               : apiStatus === "sending"
               ? "Компилирование 🛠"
+              : apiStatus === null
+              ? "Вывода нет ❌"
               : "Ожидание запуска..."
           }}
         </div>
@@ -34,61 +36,69 @@
               ? 'border-red-400'
               : apiStatus === 'sending'
               ? 'border-orange-400'
+              : apiStatus === null
+              ? 'border-red-400'
               : 'border-white'
           } transition-all duration-300`"
         />
 
-        <div class="flex-auto overflow-x-scroll text-sm">
-          <div v-for="(result, index) in compiled.compile_result" :key="index">
-            <div v-if="result.compile.stdout !== ''" class="showTask">
-              <p
-                v-for="str in result.compile.stdout.split('\n')"
-                :key="
-                  result.compile.stdout
-                    .split('\n')
-                    .findIndex((el) => el === str) + 1
+        <div
+          class="flex-auto overflow-x-scroll text-sm"
+          v-if="compiled.compile_result.length > 0"
+        >
+          <div
+            v-if="
+              compiled.compile_result[0].run.stderr !== '' ||
+              compiled.compile_result[0].compile.stderr !== ''
+            "
+          >
+            <div class="flex flex-col gap-6">
+              <p>
+                {{ compiled.compile_result[0].compile.stderr }}
+              </p>
+              <p>
+                {{ compiled.compile_result[0].run.stderr.split('",')[1] }}
+              </p>
+            </div>
+          </div>
+          <div v-else>
+            <div
+              v-for="(result, index) in compiled.compile_result"
+              :key="index"
+            >
+              <div v-if="result.compile.stdout !== ''" class="showTask">
+                <p
+                  v-for="str in result.compile.stdout.split('\n')"
+                  :key="
+                    result.compile.stdout
+                      .split('\n')
+                      .findIndex((el) => el === str) + 1
+                  "
+                >
+                  {{ str }}
+                </p>
+              </div>
+
+              <div
+                v-if="
+                  result.run.stderr === '' &&
+                  result.compile.stderr === '' &&
+                  apiStatus === true
                 "
+                :class="`flex justify-between items-center my-2 border-[1px] border-white p-2 border-opacity-40 rounded-md cursor-default ${
+                  result.run.stdout === result.output
+                    ? 'text-green-500'
+                    : 'text-red-500'
+                } hover:border-opacity-90 transition-all duration-200`"
               >
-                {{ str }}
-              </p>
-            </div>
-
-            <p v-if="result.compile.stderr !== ''">
-              {{ result.compile.stderr.split('",')[1] }}
-            </p>
-
-            <div
-              v-if="result.run.stderr !== '' || result.compile.stderr !== ''"
-              class="flex flex-col gap-6"
-            >
-              <p>
-                {{ result.compile.stderr }}
-              </p>
-              <p>
-                {{ result.run.stderr }}
-              </p>
-            </div>
-
-            <div
-              v-if="
-                result.run.stderr === '' &&
-                result.compile.stderr === '' &&
-                apiStatus === true
-              "
-              :class="`flex justify-between items-center my-2 border-[1px] border-white p-2 border-opacity-40 rounded-md cursor-default ${
-                result.run.stdout === result.output
-                  ? 'text-green-500'
-                  : 'text-red-500'
-              } hover:border-opacity-90 transition-all duration-200`"
-            >
-              <div>Ввод: {{ result.input }}</div>
-              <div class="flex flex-col">
-                <p>Результат: {{ result.run.stdout }}</p>
-                <p>Нужно: {{ result.output }}</p>
+                <div>Ввод: {{ result.input }}</div>
+                <div class="flex flex-col">
+                  <p>Результат: {{ result.run.stdout }}</p>
+                  <p>Нужно: {{ result.output }}</p>
+                </div>
               </div>
             </div>
           </div>
-
           <div v-if="compiled.max_success !== 0 && apiStatus === true">
             <div
               v-for="index in compiled.max_success -
@@ -264,6 +274,10 @@ export default {
           ? (this.apiStatus = false)
           : (this.apiStatus = true);
       });
+
+      if (this.compiled.compile_result.length === 0) {
+        this.apiStatus = null;
+      }
     },
   },
   mounted() {
