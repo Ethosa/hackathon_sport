@@ -11,6 +11,13 @@ class OutputData:
         self.stdout: str = stdout.decode(encoding) if isinstance(stdout, bytes) else stdout
         self.stderr: str = stderr.decode(encoding) if isinstance(stderr, bytes) else stderr
 
+        if os.name in ['nt', 'win32']:
+            self.stdout = self.stdout[:-2] if self.stdout else self.stdout
+            self.stderr = self.stderr[:-2] if self.stderr else self.stderr
+        else:
+            self.stdout = self.stdout[:-1] if self.stdout else self.stdout
+            self.stderr = self.stderr[:-1] if self.stderr else self.stderr
+
     def __str__(self) -> str:
         return f'OutputData({self.stdout}, {self.stderr})'
 
@@ -108,8 +115,6 @@ class JavaCompiler(ABCCompiler):
             self,
             input_data: bytes = None
     ) -> OutputData:
-        print(
-            f'cd {self.filepath.rsplit("/", 1)[0]} && java {self.filepath.rsplit("/", 1)[1].rsplit(".", 1)[0]}')
         proc = await self.generate_proc(
             f'cd {self.filepath.rsplit("/", 1)[0]} && java {self.filepath.rsplit("/", 1)[1].rsplit(".", 1)[0]}'
         )

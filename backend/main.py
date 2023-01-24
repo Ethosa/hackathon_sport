@@ -24,7 +24,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=['*'],
     allow_methods=['*'],
-    allow_headers=['*']
+    allow_headers=['*'],
+    allow_credentials=True
 )
 
 
@@ -75,7 +76,7 @@ async def send_solution(user_id: int):
                 'id': solution[0],
                 'title': solution[1]
             } for solution in
-                cur.execute('SELECT * FROM solution WHERE id = ?', (mark[1],)).fetchall()
+                cur.execute('SELECT * FROM task WHERE id = ?', (mark[1],)).fetchall()
             ],
             'user_id': mark[2],
             'score': mark[3]
@@ -146,10 +147,15 @@ async def get_lang_by_id(role_id: int):
 @app.post('/task')
 async def create_solution(task: Task):
     cur.execute('''
-        INSERT INTO task (title, description) VALUES (?, ?)
-        ''', (task.title, task.description))
+        INSERT INTO task (title, description, time, weight) VALUES (?, ?)
+        ''', (task.title, task.description, task.time, task.weight))
     db.commit()
-    return {'response': {'id': cur.lastrowid, 'title': task.title}}
+    return {'response': {
+        'id': cur.lastrowid,
+        'title': task.title,
+        'time': task.time,
+        'weight': task.weight
+    }}
 
 
 @app.get('/tasks')
@@ -158,7 +164,9 @@ async def get_all_solutions():
     return {'response': [{
         'id': solution[0],
         'title': solution[1],
-        'description': solution[2]
+        'description': solution[2],
+        'time': solution[3],
+        'weight': solution[4],
     } for solution in solutions]}
 
 
@@ -169,14 +177,20 @@ async def get_solution_by_id(task_id: int):
     ).fetchone()
     if solution is None:
         return {'error': 'Task is not exists', 'code': 2}
-    return {'response': {'id': task_id, 'title': solution[1], 'description': solution[2]}}
+    return {'response': {
+        'id': task_id,
+        'title': solution[1],
+        'description': solution[2],
+        'time': solution[3],
+        'weight': solution[4],
+    }}
 
 
 @app.post('/mark')
 async def create_mark(mark: Mark):
     cur.execute('''
-        INSERT INTO mark (task_id, user_id, score, used_lang) VALUES (?, ?, ?, ?)
-        ''', (mark.task_id, mark.user_id, mark.score))
+        INSERT INTO mark (task_id, user_id, score, used_language) VALUES (?, ?, ?, ?)
+        ''', (mark.task_id, mark.user_id, mark.score, mark.used_lang))
     db.commit()
     return {'response': {
         'id': cur.lastrowid,
@@ -205,7 +219,6 @@ async def get_mark_by_id(mark_id: int):
         'score': mark[3],
         'used_lang': mark[4]
     }}
-
 
 
 @app.get('/available{lang_id}')
@@ -239,18 +252,18 @@ async def send_solution(solution: Solution):
 
     match solution.lang:
         case Language.Python:
-            return await Maat.watch(
-                sw, PythonCompiler, input_data, output, hidden
+            result = await Maat.watch(
+                sw, PythonCompiler, task[3], task[4], input_data, output, hidden
             )
         case Language.CSharp:
-            return await Maat.watch(
-                sw, CSharpCompiler, input_data, output, hidden,
+            result = await Maat.watch(
+                sw, CSharpCompiler, task[3], task[4], input_data, output, hidden,
                 file_ext='cs',
                 class_name=True
             )
         case Language.Java:
-            return await Maat.watch(
-                sw, JavaCompiler, input_data, output, hidden,
+            result = await Maat.watch(
+                sw, JavaCompiler, task[3], task[4], input_data, output, hidden,
                 file_ext='java',
                 class_name=True
             )
@@ -259,6 +272,20 @@ async def send_solution(solution: Solution):
                 'error': 'Unknown language',
                 'code': 1000
             }
+    if 'response' in result and result['response']['success']:
+        score = (
+            result['response']['success'] +
+            (5 if result['response']['time'] <= task[3] else 0) +
+            (5 if result['response']['weight'] <= task[4] else 0)
+        )
+        await create_mark(Mark(
+            task_id=solution.task_id,
+            user_id=u[0],
+            score=score,
+            used_lang=solution.lang
+        ))
+        result['response']['score'] = score
+    return result
 
 
 class ProactorServer(Server):

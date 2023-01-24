@@ -14,6 +14,8 @@ class Solution(BaseModel):
 class Task(BaseModel):
     title: str
     description: str
+    weight: int
+    time: int
 
 
 class User(BaseModel):

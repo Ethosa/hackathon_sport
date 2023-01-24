@@ -10,6 +10,8 @@ class Maat:
     async def watch(
             sw: SolutionWizard,
             compiler: Type[ABCCompiler],
+            max_time: int,
+            weight: int,
             input_data: list[str] | None = None,
             output: list[str] | None = None,
             hidden_layers: list[bool] | None = None,
@@ -34,12 +36,17 @@ class Maat:
         print(output)
         print(hidden_layers)
 
+        time = []
+        weight = 0
+
         if input_data:
             for i in range(len(input_data)):
                 inp = input_data[i]
                 out = output[i] if output else None
                 is_hidden = hidden_layers[i] if hidden_layers else None
-                result = await sw.check_solution(compiler, inp.encode(), file_ext, class_name)
+                result = await sw.check_solution(
+                    compiler, max_time, weight, inp.encode(), file_ext, class_name
+                )
                 print(result)
                 if 'error' in result:
                     return result
@@ -50,6 +57,10 @@ class Maat:
                         result['input'] = inp
                         result['output'] = out
                         res.append(result)
+                        weight = result['weight']
+                        del result['weight']
+                        time.append(result['time'])
+                        del result['time']
                 elif result['run']['stdout'] or result['compile']['stdout'] and out:
                     if result['run']['stdout'].replace('\r', '') in [out, out + '\n']:
                         success += 1
@@ -59,9 +70,19 @@ class Maat:
                         result['input'] = inp
                         result['output'] = out
                         res.append(result)
+                        weight = result['weight']
+                        del result['weight']
+                        time.append(result['time'])
+                        del result['time']
+
+        time.sort()
+
         return {'response': {
             'success': success,
             'errors': errors,
             'max_success': max_success,
-            'compile_result': res
+            'compile_result': res,
+            'time': round(time[0] * 1000),
+            'weight': weight,
+            'score': 0
         }}
