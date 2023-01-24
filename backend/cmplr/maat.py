@@ -48,9 +48,9 @@ class Maat:
                     compiler, max_time, weight, inp.encode(), file_ext, class_name
                 )
                 print(result)
+                result = result['response']
                 if 'error' in result:
                     return result
-                result = result['response']
                 if result['run']['stderr'] or result['compile']['stderr']:
                     errors += 1
                     if not is_hidden:
