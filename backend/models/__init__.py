@@ -36,3 +36,8 @@ class Language(IntEnum):
     Python = 1
     CSharp = 2
     Java = 3
+
+
+class Role(IntEnum):
+    USER = 1
+    ADMIN = 2

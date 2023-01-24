@@ -36,7 +36,7 @@ class Maat:
         print(output)
         print(hidden_layers)
 
-        time = []
+        time = 2e9
         weight = 0
 
         if input_data:
@@ -59,7 +59,7 @@ class Maat:
                         res.append(result)
                         weight = result['weight']
                         del result['weight']
-                        time.append(result['time'])
+                        time = min(time, result['weight'])
                         del result['time']
                 elif result['run']['stdout'] or result['compile']['stdout'] and out:
                     if result['run']['stdout'].replace('\r', '') in [out, out + '\n']:
@@ -72,7 +72,7 @@ class Maat:
                         res.append(result)
                         weight = result['weight']
                         del result['weight']
-                        time.append(result['time'])
+                        time = min(time, result['weight'])
                         del result['time']
 
         time.sort()

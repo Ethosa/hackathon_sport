@@ -14,7 +14,7 @@ from uvicorn import Server, Config
 from cmplr import PythonCompiler, JavaCompiler, CSharpCompiler
 from cmplr.solution_wizard import SolutionWizard
 from cmplr.maat import Maat
-from models import Solution, User, Task, Mark, Language
+from models import Solution, User, Task, Mark, Language, Role
 from utils import gen_token
 from config import ADMIN_TOKEN
 
@@ -93,6 +93,24 @@ async def create_new_user(user: User):
         ''', (user.name, user.group, user.login, user.password, access_token, 1))
     db.commit()
     return {'response': {'id': cur.lastrowid, 'access_token': access_token}}
+
+
+@app.get('/leaders-list')
+async def get_leaders():
+    users = cur.execute('SELECT * FROM user WHERE role = ?', (Role.USER,)).fetchall()
+    scores = []
+    for user in users:
+        marks = cur.execute('SELECT * FROM mark WHERE user_id = ?', (user[0],)).fetchall()
+        scores.append({
+            'id': user[0],
+            'name': user[1],
+            'group': user[2],
+            'score': sum([i[3] for i in marks]),
+            'login': user[3],
+            'decided': len(marks)
+        })
+    scores = sorted(scores, key=lambda x: x['score'] + x['decided'], reverse=True)
+    return scores
 
 
 @app.post('/boost{user_id}')
