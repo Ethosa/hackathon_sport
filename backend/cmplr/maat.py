@@ -75,8 +75,6 @@ class Maat:
                         time = min(time, result['weight'])
                         del result['time']
 
-        time.sort()
-
         return {'response': {
             'success': success,
             'errors': errors,
