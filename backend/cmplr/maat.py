@@ -82,7 +82,7 @@ class Maat:
             'errors': errors,
             'max_success': max_success,
             'compile_result': res,
-            'time': round(time[0] * 1000),
+            'time': round(time * 1000),
             'weight': weight,
             'score': 0
         }}
