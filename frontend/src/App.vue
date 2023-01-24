@@ -19,14 +19,7 @@
           @click="$router.push(user.isLoggedIn ? '/tasks' : '/profile')"
           >задачи</Button
         >
-        <Button
-          flat
-          @click="$router.push(user.isLoggedIn ? '/leaders' : '/profile')"
-          >лидеры</Button
-        >
-        <Button flat @click="$router.push('/profile')"
-          >профиль</Button
-        >
+        <Button flat @click="$router.push('/profile')">профиль</Button>
       </div>
     </div>
     <router-view :class="`${fixedHeader ? 'py-20' : ''} px-40`" />
