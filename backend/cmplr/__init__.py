@@ -78,7 +78,7 @@ class PythonCompiler(ABCCompiler):
 
     @staticmethod
     def forbidden(code: str) -> dict[str, any] | None:
-        if search(r'(\nimport\s+(?!(math|random))|__import__)', code):
+        if search(r'(\nimport\s+(?!(math|random))|\Aimport\s+(?!(math|random))|__import__)', code):
             return {'response': {
                 'error': 'import is forbidden',
                 'available_list': PythonCompiler.available,
