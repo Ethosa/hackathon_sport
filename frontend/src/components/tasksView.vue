@@ -8,12 +8,27 @@
         v-for="task in tasks"
         :key="task"
       >
-        <p
-          class="text-3xl uppercase tracking-widest font-semibold cursor-pointer hover:text-fore transition-all"
-          @click="$router.push(`/task/${task.id}`)"
-        >
-          {{ task.title }}
-        </p>
+        <div class="flex w-full justify-between">
+          <p
+            class="text-3xl uppercase tracking-widest font-semibold cursor-pointer hover:text-fore transition-all"
+            @click="$router.push(`/task/${task.id}`)"
+          >
+            {{ task.title }}
+          </p>
+          <p
+            :class="`${
+              checkTask(task.id) !== undefined
+                ? 'text-green-500'
+                : 'text-red-500'
+            } font-bold`"
+          >
+            {{
+              checkTask(task.id) !== undefined
+                ? `${checkTask(task.id)} баллов`
+                : "Задание не выполнено"
+            }}
+          </p>
+        </div>
         <p class="text-xl text-left indent-8 tracking-wider cursor-default">
           {{ task.description }}
         </p>
@@ -55,10 +70,25 @@ export default {
       tasks: [],
     };
   },
+  methods: {
+    checkTask(taskID) {
+      let result = undefined;
+      userStore().marks.forEach((mark) => {
+        mark.task.forEach((task) => {
+          if (task.id === parseInt(taskID)) {
+            result = mark.score;
+          }
+        });
+      });
+      return result;
+    },
+  },
   mounted() {
     API.getAllTasks().then((v) => {
       this.tasks = v.response;
-      console.log(v);
+    });
+    API.getUser(userStore().userId).then((e) => {
+      userStore().marks = e.response.marks;
     });
   },
 };

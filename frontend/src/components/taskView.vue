@@ -1,8 +1,14 @@
 <template>
   <div class="flex-auto flex flex-col gap-3 px-40 showTask">
-    <p class="text-3xl uppercase font-semibold self-center tracking-widest">
-      Секция: "{{ title }}"
-    </p>
+    <div class="flex justify-between items-center tracking-widest">
+      <p class="text-3xl font-semibold uppercase">Секция: "{{ title }}"</p>
+
+      <p :class="`${completed === false ? 'text-red-500' : 'text-green-500'}`">
+        {{
+          completed === false ? "Задание не выполнено" : `${completed} баллов `
+        }}
+      </p>
+    </div>
     <p class="indent-8 text-xl">{{ description }}</p>
 
     <div class="flex-auto flex max-h-[700px]">
@@ -86,7 +92,7 @@
                     result.compile.stderr === '' &&
                     apiStatus === true
                   "
-                  :class="`flex gap-3 justify-between items-center my-2 border-[1px] border-white p-2 border-opacity-40 rounded-md cursor-default ${
+                  :class="`flex justify-between items-center my-2 border-[1px] border-white p-2 border-opacity-40 rounded-md cursor-default ${
                     result.run.stdout === result.output
                       ? 'text-green-500'
                       : 'text-red-500'
@@ -135,13 +141,10 @@
             v-if="compiled.error === 'import is forbidden'"
             class="text-sm flex flex-col gap-3 cursor-default"
           >
-            <p>Импортирование библиотек вне требований запрещено.</p>
+            <p>Вы пытаетесь импортировать запрещённую библиотеку.</p>
             <p>Список разрешённых библиотек:</p>
             <ul>
-              <li
-                v-for="(lib, index) in compiled.available_list"
-                :key="index"
-              >
+              <li v-for="(lib, index) in compiled.available_list" :key="index">
                 {{ lib }}
               </li>
             </ul>
@@ -207,6 +210,7 @@ export default {
       interpreterErr: false,
       description: "",
       selectedLanguage: 1,
+      completed: false,
       languages: [],
       editor: undefined,
       monaco: undefined,
@@ -242,6 +246,18 @@ export default {
           },
         ],
       };
+    },
+    updateTasks() {
+      API.getUser(userStore().userId).then((e) => {
+        userStore().marks = e.response.marks;
+        userStore().marks.forEach((mark) => {
+          mark.task.forEach((task) => {
+            if (task.id == parseInt(this.taskId)) {
+              this.completed = mark.score;
+            }
+          });
+        });
+      });
     },
     setLang(index) {
       let lang = this.languages[index].name;
@@ -307,6 +323,8 @@ export default {
       } else {
         this.apiStatus = false;
       }
+
+      this.updateTasks();
     },
   },
   mounted() {
@@ -318,6 +336,7 @@ export default {
       this.languages = r.response;
       this.updateEditor();
     });
+    this.updateTasks();
   },
 };
 </script>
