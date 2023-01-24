@@ -217,30 +217,28 @@ async def send_solution(solution: Solution):
     filename = f'solutions/{solution.access_token}_{solution.task_id}'
     sw = SolutionWizard(filename, solution)
     maat = Maat()
+
+    input_data, output, hidden = (
+                [i[2] for i in default_input],
+                [i[3] for i in default_input],
+                [i[4] for i in default_input]
+    )
+
     match solution.lang:
         case Language.Python:
             result = await maat.watch(
-                sw, PythonCompiler,
-                [i[2] for i in default_input],
-                [i[3] for i in default_input],
-                [i[4] for i in default_input],
+                sw, PythonCompiler, input_data, output, hidden
             )
             return result
         case Language.CSharp:
             result = await maat.watch(
-                sw, CSharpCompiler,
-                [i[2] for i in default_input],
-                [i[3] for i in default_input],
-                [i[4] for i in default_input],
+                sw, CSharpCompiler, input_data, output, hidden,
                 file_ext='cs',
                 class_name=True
             )
         case Language.Java:
             result = await maat.watch(
-                sw, JavaCompiler,
-                [i[2] for i in default_input],
-                [i[3] for i in default_input],
-                [i[4] for i in default_input],
+                sw, JavaCompiler, input_data, output, hidden,
                 file_ext='java',
                 class_name=True
             )
