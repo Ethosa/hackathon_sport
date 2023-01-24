@@ -59,7 +59,7 @@ class Maat:
                         res.append(result)
                         weight = result['weight']
                         del result['weight']
-                        time = min(time, result['weight'])
+                        time = min(time, result['time'])
                         del result['time']
                 elif result['run']['stdout'] or result['compile']['stdout'] and out:
                     if result['run']['stdout'].replace('\r', '') in [out, out + '\n']:
@@ -72,7 +72,7 @@ class Maat:
                         res.append(result)
                         weight = result['weight']
                         del result['weight']
-                        time = min(time, result['weight'])
+                        time = min(time, result['time'])
                         del result['time']
 
         return {'response': {
