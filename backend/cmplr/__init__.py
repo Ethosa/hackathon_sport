@@ -7,9 +7,9 @@ from re import search
 
 
 class OutputData:
-    def __init__(self, stdout: bytes, stderr: bytes, encoding: str = 'utf-8'):
-        self.stdout: str = stdout.decode(encoding)
-        self.stderr: str = stderr.decode(encoding)
+    def __init__(self, stdout: bytes, stderr: bytes | str, encoding: str = 'utf-8'):
+        self.stdout: str = stdout.decode(encoding) if isinstance(stdout, bytes) else stdout
+        self.stderr: str = stderr.decode(encoding) if isinstance(stderr, bytes) else stderr
 
     def __str__(self) -> str:
         return f'OutputData({self.stdout}, {self.stderr})'

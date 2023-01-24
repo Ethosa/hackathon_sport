@@ -227,9 +227,23 @@ async def send_solution(solution: Solution):
             )
             return result
         case Language.CSharp:
-            result = await sw.check_solution(CSharpCompiler, file_ext='cs', need_class_name=True)
+            result = await maat.watch(
+                sw, CSharpCompiler,
+                [i[2] for i in default_input],
+                [i[3] for i in default_input],
+                [i[4] for i in default_input],
+                file_ext='cs',
+                class_name=True
+            )
         case Language.Java:
-            result = await sw.check_solution(JavaCompiler, file_ext='java', need_class_name=True)
+            result = await maat.watch(
+                sw, JavaCompiler,
+                [i[2] for i in default_input],
+                [i[3] for i in default_input],
+                [i[4] for i in default_input],
+                file_ext='java',
+                class_name=True
+            )
         case _:
             return {
                 'error': 'Unknown language',

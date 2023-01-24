@@ -6,8 +6,8 @@ from .solution_wizard import SolutionWizard
 
 
 class Maat:
+    @staticmethod
     async def watch(
-            self,
             sw: SolutionWizard,
             compiler: Type[ABCCompiler],
             input_data: list[str] | None = None,
@@ -16,6 +16,16 @@ class Maat:
             file_ext: str = 'py',
             class_name: bool = False
     ) -> OutputData:
+        """Checks user's solution
+
+        :param sw: SolutionWizard
+        :param compiler: Compiler class
+        :param input_data: list of input data
+        :param output: list of output data
+        :param hidden_layers: list of hidden
+        :param file_ext: solution file extension
+        :param class_name: need to name file as solution code class
+        """
         success = 0
         errors = 0
         max_success = len(output) if output else 0
