@@ -12,7 +12,7 @@ export const userStore = defineStore("userStore", {
   }),
   getters: {
     isLoggedIn: (state) => {
-      return state.userId > 0;
+      return state.userId !== 0;
     },
     markCount: (state) => {
       return state.marks.length;

@@ -8,12 +8,27 @@
         v-for="task in tasks"
         :key="task"
       >
-        <p
-          class="text-3xl uppercase tracking-widest font-semibold cursor-pointer hover:text-fore transition-all"
-          @click="$router.push(`/task/${task.id}`)"
-        >
-          {{ task.title }}
-        </p>
+        <div class="flex w-full justify-between">
+          <p
+            class="text-3xl uppercase tracking-widest font-semibold cursor-pointer hover:text-fore transition-all"
+            @click="$router.push(`/task/${task.id}`)"
+          >
+            {{ task.title }}
+          </p>
+          <p
+            :class="`${
+              checkTask(task.id) !== undefined
+                ? 'text-green-500'
+                : 'text-red-500'
+            } font-bold`"
+          >
+            {{
+              checkTask(task.id) !== undefined
+                ? `${checkTask(task.id)} баллов`
+                : "Задание не выполнено"
+            }}
+          </p>
+        </div>
         <p class="text-xl text-left indent-8 tracking-wider cursor-default">
           {{ task.description }}
         </p>
@@ -37,7 +52,55 @@
         </Button>
       </div>
     </transition-group>
-    <div v-if="tasks.length === 0">please wait</div>
+    <div
+      v-if="tasks.length === 0"
+      class="w-full h-full flex items-center justify-center"
+    >
+      <div class="h-20 w-20">
+        <svg
+          version="1.1"
+          id="L5"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          x="0px"
+          y="0px"
+          viewBox="0 0 100 100"
+          enable-background="new 0 0 0 0"
+          xml:space="preserve"
+        >
+          <circle fill="#fff" stroke="none" cx="6" cy="50" r="6">
+            <animateTransform
+              attributeName="transform"
+              dur="1s"
+              type="translate"
+              values="0 15 ; 0 -15; 0 15"
+              repeatCount="indefinite"
+              begin="0.1"
+            ></animateTransform>
+          </circle>
+          <circle fill="#fff" stroke="none" cx="30" cy="50" r="6">
+            <animateTransform
+              attributeName="transform"
+              dur="1s"
+              type="translate"
+              values="0 10 ; 0 -10; 0 10"
+              repeatCount="indefinite"
+              begin="0.2"
+            ></animateTransform>
+          </circle>
+          <circle fill="#fff" stroke="none" cx="54" cy="50" r="6">
+            <animateTransform
+              attributeName="transform"
+              dur="1s"
+              type="translate"
+              values="0 5 ; 0 -5; 0 5"
+              repeatCount="indefinite"
+              begin="0.3"
+            ></animateTransform>
+          </circle>
+        </svg>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -55,10 +118,25 @@ export default {
       tasks: [],
     };
   },
+  methods: {
+    checkTask(taskID) {
+      let result = undefined;
+      userStore().marks.forEach((mark) => {
+        mark.task.forEach((task) => {
+          if (task.id === parseInt(taskID)) {
+            result = mark.score;
+          }
+        });
+      });
+      return result;
+    },
+  },
   mounted() {
     API.getAllTasks().then((v) => {
       this.tasks = v.response;
-      console.log(v);
+    });
+    API.getUser(userStore().userId).then((e) => {
+      userStore().marks = e.response.marks;
     });
   },
 };
