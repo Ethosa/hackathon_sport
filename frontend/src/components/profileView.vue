@@ -70,28 +70,24 @@ export default {
     };
   },
   methods: {
-    auth() {
-      API.auth(this.$refs.login.getText(), this.$refs.pass.getText()).then(
-        (e) => {
-          if ("error" in e) {
-            this.$refs.pass.setError(e.error);
-          } else {
-            this.user.userId = e.response.id;
-            this.user.token = e.response.access_token;
-            this.user.login = this.$refs.login.getText();
-            API.getUser(this.user.userId).then((e) => {
-              this.user.name = e.response.name;
-              this.user.marks = e.response.marks;
-              this.user.group = e.response.group;
-              let role = e.response.role;
-              API.getRole(role).then((res) => {
-                this.user.role = res.response.title;
-              });
-            });
-            console.log(e);
-          }
-        }
-      );
+    async auth() {
+      let r = await API.auth(this.$refs.login.getText(), this.$refs.pass.getText())
+      console.log(r.response)
+      if ("error" in r.response) {
+        this.$refs.pass.setError(r.response.error);
+      } else {
+        this.user.userId = r.response.id;
+        this.user.token = r.response.access_token;
+        this.user.login = this.$refs.login.getText();
+        let res = await API.getUser(this.user.userId)
+        this.user.name = res.response.name;
+        this.user.marks = res.response.marks;
+        this.user.group = res.response.group;
+        let role = res.response.role;
+        res = await API.getRole(role)
+        this.user.role = res.response.title;
+        console.log(res.response);
+      }
       console.log(this.user);
     },
   },

@@ -48,24 +48,24 @@ async function getMark(markId) {
 
 async function sendSolution(code, task_id, lang, token = userStore().token) {
   const response = await axios
-    .put(`${API_URL}solution`, {
-      code: code,
-      access_token: token,
-      task_id: task_id,
-      lang: lang,
-    })
-    .then((res) => {
-      return res.data.response ? res.data.response : res.data;
-    })
-    .catch((err) => {
-      return err;
-    });
+      .put(`${API_URL}solution`, {
+        code: code,
+        access_token: token,
+        task_id: task_id,
+        lang: lang,
+      })
+      .then((res) => {
+        return res.data.response ? res.data.response : res.data;
+      })
+      .catch((err) => {
+        return err;
+      });
   return await response;
 }
 
 async function auth(login, password) {
   const response = await fetch(
-    `${API_URL}auth?login=${login}&password=${password}`
+      `${API_URL}auth?login=${login}&password=${password}`
   );
   return await response.json();
 }

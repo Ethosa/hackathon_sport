@@ -58,7 +58,7 @@ class ABCCompiler:
 
 class PythonCompiler(ABCCompiler):
     available = [
-        'math', 'random'
+        'math', 'random', 'numpy', 'pandas'
     ]
 
     async def compile(self) -> OutputData:
@@ -178,7 +178,7 @@ class CSharpCompiler(ABCCompiler):
 
     @staticmethod
     def forbidden(code: str) -> dict[str, any] | None:
-        if search(r'(\[[\S ()]+])', code):
+        if search(r'(\n +\[[\S ()]+])', code):
             return {'response': {
                 'error': 'Attributes is forbidden.',
                 'available_list': [],

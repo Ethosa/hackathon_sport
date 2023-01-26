@@ -249,7 +249,7 @@ export default {
     },
     updateTasks() {
       API.getUser(userStore().userId).then((e) => {
-        userStore().marks = e.response.marks;
+        userStore().marks = e.marks;
         userStore().marks.forEach((mark) => {
           mark.task.forEach((task) => {
             if (task.id == parseInt(this.taskId)) {
@@ -327,15 +327,13 @@ export default {
       this.updateTasks();
     },
   },
-  mounted() {
-    API.getTask(this.taskId).then((r) => {
-      this.title = r.response.title;
-      this.description = r.response.description;
-    });
-    API.getAllLangs().then((r) => {
-      this.languages = r.response;
-      this.updateEditor();
-    });
+  async mounted() {
+    let res = await API.getTask(this.taskId)
+    this.title = res.response.title;
+    this.description = res.response.description;
+    res = await API.getAllLangs()
+    this.languages = res.response;
+    this.updateEditor();
     this.updateTasks();
   },
 };

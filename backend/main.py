@@ -318,6 +318,6 @@ class ProactorServer(Server):
 
 
 if __name__ == '__main__':
-    config = Config(app="main:app", host="localhost", port=8000, reload=True)
+    config = Config(app="main:app", host="127.0.0.1", port=8000, reload=True)
     server = ProactorServer(config=config)
     server.run()
